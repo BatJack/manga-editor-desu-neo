@@ -225,6 +225,7 @@ function getElementClasses(element) {
 <link rel="stylesheet" href="css/tagify.css?v=7.2" media="print" onload="this.media='all'">
 
 <link rel="stylesheet" href="css/ui/font-manager.css?v=7.2" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="css/ui/gallery.css?v=7.3">
 
 <script src="https://cdn.jsdelivr.net/npm/stacktrace-js/dist/stacktrace.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.31.3/tagify.min.js"></script>
@@ -713,6 +714,11 @@ function getElementClasses(element) {
                 <div class="icon-wrapper" data-action="toggleVisibility" data-target="shape-area">
                  <i class="material-icons" id="intro_shape-area">interests</i>
                  <span class="icon-label" data-i18n="side-label-shape">図形</span>
+                </div>
+                <hr>
+                <div class="icon-wrapper" data-action="toggleVisibility" data-target="gallery-area">
+                 <i class="material-icons" id="intro_gallery-area">photo_library</i>
+                 <span class="icon-label" data-i18n="side-label-gallery">ギャラリー</span>
                 </div>
                </div>
 
@@ -1512,7 +1518,18 @@ function getElementClasses(element) {
                 </div>
             </div>
 
-
+<!-- ========== Panel: Gallery ========== -->
+            <div class="left_area" id="gallery-area" style="display: none;">
+                <div class="area-header" data-i18n="gallery-title">フォルダ画像</div>
+                <div id="gallery-content">
+                    <button id="gallery-open-folder-btn" onclick="openGalleryFolder()">
+                        <i class="material-icons">folder_open</i>
+                        <span data-i18n="gallery-open-folder">フォルダを開く</span>
+                    </button>
+                    <div id="gallery-info" class="gallery-info"></div>
+                    <div id="gallery-grid" class="gallery-grid"></div>
+                </div>
+            </div>
 
 <!-- ========== Canvas Area ========== -->
             <div id="canvas-area">
@@ -1520,6 +1537,7 @@ function getElementClasses(element) {
 
 
                     <input type="file" id="imageInput" multiple style="display: none;" accept="image/*">
+                    <input type="file" id="folderInput" webkitdirectory multiple style="display: none;" accept="image/*">
 
                     <button id="clearMode" onclick="operationModeClear()">
                         <span class="material-symbols-outlined">cancel_presentation</span>
@@ -2092,6 +2110,7 @@ function getElementClasses(element) {
     <script src="js/core/svg/google-icon-names.js?v=7.2"></script>
     <script src="js/core/svg/google-icon-helper.js?v=7.2"></script>
     <script src="js/ui/bottom-bar.js?v=7.2" defer></script>
+    <script src="js/ui/gallery.js?v=7.3" defer></script>
 
     <script src="js/ai/prompt/auto/prompt-map.js?v=7.2" defer></script>
     <script src="js/ai/prompt/auto/story-prompt-map.js?v=7.2" defer></script>

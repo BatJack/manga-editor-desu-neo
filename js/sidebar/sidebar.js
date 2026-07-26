@@ -28,6 +28,7 @@ $("tool-area").style.display="none";
 $("manga-tone-area").style.display="none";
 $("manga-effect-area").style.display="none";
 $("shape-area").style.display="none";
+$("gallery-area").style.display="none";
 $("control-area").style.display="none";
 element.style.display="block";
 lazyLoadSvgData(id);

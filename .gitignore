@@ -169,3 +169,6 @@ package-lock.json
 tmpclaude-*
 test_offscreen.html
 .claude/tool-history.jsonl
+
+# Other
+.omo/

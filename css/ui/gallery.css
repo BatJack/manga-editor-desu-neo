@@ -1,0 +1,98 @@
+/* ========== Gallery Panel ========== */
+#gallery-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 40px);
+    overflow: hidden;
+}
+
+#gallery-open-folder-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 10px 12px;
+    border: 1px dashed var(--color-border, #555);
+    border-radius: 6px;
+    background: var(--color-surface, #2a2a2a);
+    color: var(--color-text, #ddd);
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+#gallery-open-folder-btn:hover {
+    background: var(--color-hover, #3a3a3a);
+    border-color: var(--color-accent, #6a9ef5);
+}
+
+#gallery-open-folder-btn i {
+    font-size: 20px;
+}
+
+.gallery-info {
+    padding: 4px 12px 8px;
+    font-size: 11px;
+    color: var(--color-text-secondary, #999);
+    text-align: center;
+    min-height: 16px;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    padding: 8px 10px 12px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.gallery-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 8px 8px 6px;
+    background: var(--color-surface, #2a2a2a);
+    border: 1px solid var(--color-border, #444);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.gallery-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    border-color: var(--color-accent, #6a9ef5);
+}
+
+.gallery-thumb {
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--color-border, #555);
+    background: var(--color-surface-alt, #222);
+}
+
+.gallery-item-name {
+    font-size: 10px;
+    color: var(--color-text-secondary, #999);
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-align: center;
+}
+
+/* Empty state */
+.gallery-grid:empty::after {
+    content: attr(data-empty-text);
+    display: block;
+    grid-column: 1 / -1;
+    padding: 32px 12px;
+    text-align: center;
+    color: var(--color-text-secondary, #666);
+    font-size: 12px;
+}
