@@ -1522,12 +1522,15 @@ function getElementClasses(element) {
             <div class="left_area" id="gallery-area" style="display: none;">
                 <div class="area-header" data-i18n="gallery-title">フォルダ画像</div>
                 <div id="gallery-content">
-                    <button id="gallery-open-folder-btn" onclick="openGalleryFolder()">
-                        <i class="material-icons">folder_open</i>
-                        <span data-i18n="gallery-open-folder">フォルダを開く</span>
-                    </button>
+                    <div class="gallery-toolbar">
+                        <button id="gallery-open-folder-btn" onclick="openGalleryFolder()">
+                            <i class="material-icons">folder_open</i>
+                            <span data-i18n="gallery-open-folder">フォルダを開く</span>
+                        </button>
+                        <button id="gallery-watch-btn" onclick="galleryToggleWatch()">Watch</button>
+                    </div>
                     <div id="gallery-info" class="gallery-info"></div>
-                    <div id="gallery-grid" class="gallery-grid"></div>
+                    <div id="gallery-sections"></div>
                 </div>
             </div>
 
