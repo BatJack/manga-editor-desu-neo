@@ -9,7 +9,8 @@ var galleryState = {
     rootName: '',
     dirHandle: null,      // FileSystemDirectoryHandle (watch mode)
     watchTimer: null,
-    watchActive: false
+    watchActive: false,
+    dirStorage: null      // localforage instance for persisting dirHandle
 };
 
 // ── helpers ────────────────────────────────────────────────
@@ -63,6 +64,57 @@ function galleryClear() {
     if (info) info.textContent = '';
     var watchBtn = document.getElementById('gallery-watch-btn');
     if (watchBtn) { watchBtn.style.display = 'none'; watchBtn.textContent = 'Watch'; watchBtn.classList.remove('active'); }
+}
+
+// ── last opened path persistence ───────────────────────────
+
+var GALLERY_LAST_PATH_KEY = 'galleryLastPath';
+
+function galleryGetLastPath() {
+    try {
+        return localStorage.getItem(GALLERY_LAST_PATH_KEY) || '';
+    } catch (err) {
+        galleryLogger.warn('Failed to read last gallery path: ' + err);
+        return '';
+    }
+}
+
+function gallerySaveLastPath(path) {
+    if (!path) return;
+    try {
+        localStorage.setItem(GALLERY_LAST_PATH_KEY, path);
+    } catch (err) {
+        galleryLogger.warn('Failed to save last gallery path: ' + err);
+    }
+    galleryUpdatePathBar(path);
+}
+
+function galleryUpdatePathBar(path) {
+    var bar = document.getElementById('gallery-path-bar');
+    var text = document.getElementById('gallery-path-text');
+    if (!bar || !text) return;
+    if (path) {
+        text.textContent = path;
+        bar.style.display = 'flex';
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function galleryDirStorage() {
+    if (typeof localforage === 'undefined') return null;
+    if (!galleryState.dirStorage) {
+        galleryState.dirStorage = localforage.createInstance({ name: 'galleryDirStorage' });
+    }
+    return galleryState.dirStorage;
+}
+
+function galleryPersistDirHandle(handle) {
+    var storage = galleryDirStorage();
+    if (!storage) return;
+    storage.setItem('dirHandle', handle).catch(function (err) {
+        galleryLogger.warn('Failed to persist directory handle: ' + err);
+    });
 }
 
 // ── chunked render ─────────────────────────────────────────
@@ -342,6 +394,7 @@ function galleryToggleWatch() {
         galleryState.watchActive = true;
         btn.textContent = 'Watching';
         btn.classList.add('active');
+        galleryPersistDirHandle(handle);
         galleryLogger.info('Gallery watch started for: ' + handle.name);
 
         // Poll every 4 seconds
@@ -399,11 +452,141 @@ function mergeFileLists(oldMap, newFiles) {
     return result;
 }
 
+// ── refresh from remembered path ────────────────────────────
+
+function galleryRefreshFromPath() {
+    var lastPath = galleryGetLastPath();
+    if (!lastPath) {
+        openGalleryFolder();
+        return;
+    }
+    galleryLogger.info('Gallery refresh requested for: ' + lastPath);
+
+    galleryFindUsableHandle(lastPath).then(function (handle) {
+        if (handle) {
+            galleryReadFromHandle(handle, lastPath);
+        } else {
+            openGalleryFolder();
+        }
+    }).catch(function (err) {
+        galleryLogger.warn('Handle refresh failed, opening folder picker: ' + err);
+        openGalleryFolder();
+    });
+}
+
+function galleryFindUsableHandle(lastPath) {
+    if (galleryState.dirHandle && galleryState.dirHandle.name === lastPath) {
+        return Promise.resolve(galleryState.dirHandle);
+    }
+    var storage = galleryDirStorage();
+    if (!storage) return Promise.resolve(null);
+
+    return storage.getItem('dirHandle').then(function (handle) {
+        if (!handle || handle.name !== lastPath) return null;
+        if (!handle.queryPermission || !handle.requestPermission) return null;
+        return handle.queryPermission({ mode: 'read' }).then(function (perm) {
+            if (perm === 'granted') return handle;
+            if (perm === 'prompt') {
+                return handle.requestPermission({ mode: 'read' }).then(function (result) {
+                    return result === 'granted' ? handle : null;
+                });
+            }
+            return null;
+        });
+    }).catch(function (err) {
+        galleryLogger.warn('Stored directory handle unavailable: ' + err);
+        return null;
+    });
+}
+
+function galleryWalkHandle(dirHandle, prefix, out) {
+    return new Promise(function (resolve, reject) {
+        var iterator;
+        try {
+            iterator = dirHandle.values();
+        } catch (err) {
+            reject(err);
+            return;
+        }
+        function step() {
+            iterator.next().then(function (result) {
+                if (result.done) {
+                    resolve(out);
+                    return;
+                }
+                var entry = result.value;
+                if (entry.kind === 'file') {
+                    entry.getFile().then(function (file) {
+                        if (file.type && file.type.startsWith('image/')) {
+                            try {
+                                Object.defineProperty(file, 'webkitRelativePath', { value: prefix + file.name, writable: true, configurable: true });
+                            } catch (err) {
+                                galleryLogger.warn('Failed to set relative path for ' + file.name + ': ' + err);
+                            }
+                            out.push(file);
+                        }
+                        step();
+                    }).catch(function (err) {
+                        galleryLogger.warn('Failed to read file "' + entry.name + '": ' + err);
+                        step();
+                    });
+                    return;
+                }
+                if (entry.kind === 'directory') {
+                    galleryWalkHandle(entry, prefix + entry.name + '/', out).then(step).catch(function (err) {
+                        galleryLogger.warn('Failed to read subdirectory "' + entry.name + '": ' + err);
+                        step();
+                    });
+                    return;
+                }
+                step();
+            }).catch(reject);
+        }
+        step();
+    });
+}
+
+function galleryReadFromHandle(handle, rootName) {
+    galleryLogger.info('Refreshing gallery from directory handle: ' + rootName);
+    var infoEl = document.getElementById('gallery-info');
+    galleryWalkHandle(handle, rootName + '/', []).then(function (imageFiles) {
+        if (imageFiles.length === 0) {
+            if (infoEl) infoEl.textContent = 'No image files found';
+            galleryLogger.warn('No image files found in ' + rootName);
+            return;
+        }
+        galleryState.rootName = rootName;
+        if (galleryState.entryMap) {
+            galleryDiffUpdate(imageFiles);
+        } else {
+            galleryRenderGroups(imageFiles, infoEl);
+        }
+        gallerySaveLastPath(rootName);
+    }).catch(function (err) {
+        galleryLogger.warn('Directory read failed, opening folder picker: ' + err);
+        openGalleryFolder();
+    });
+}
+
 // ── main entry ─────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function () {
     var folderInput = document.getElementById('folderInput');
     if (!folderInput) return;
+
+    // Restore last opened path from previous session
+    var savedPath = galleryGetLastPath();
+    if (savedPath) galleryUpdatePathBar(savedPath);
+
+    var pathBar = document.getElementById('gallery-path-bar');
+    if (pathBar) {
+        pathBar.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                galleryRefreshFromPath();
+            }
+        });
+    }
 
     folderInput.addEventListener('change', function (e) {
         var files = e.target.files;
@@ -431,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var slashIdx = firstRel.indexOf('/');
                 galleryState.rootName = slashIdx > 0 ? firstRel.substring(0, slashIdx) : '';
             }
+            gallerySaveLastPath(galleryState.rootName);
             return;
         }
 
@@ -455,6 +639,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var slashIdx = firstRel.indexOf('/');
             galleryState.rootName = slashIdx > 0 ? firstRel.substring(0, slashIdx) : 'folder';
         }
+        gallerySaveLastPath(galleryState.rootName);
 
         galleryLogger.info('Loading ' + imageFiles.length + ' images via ObjectURL');
         galleryRenderGroups(imageFiles, infoEl);

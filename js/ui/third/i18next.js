@@ -4495,6 +4495,11 @@ document.querySelectorAll("[data-i18n-label]").forEach(function (element) {
   const key = element.getAttribute("data-i18n-label");
   element.setAttribute("data-label", i18next.t(key));
 });
+document.querySelectorAll("[data-i18n-title]").forEach(function (element) {
+  const key = element.getAttribute("data-i18n-title");
+  const translation = i18next.t(key);
+  if (translation) element.setAttribute("title", translation);
+});
 }
 
 function changeLanguage(lng, event) {

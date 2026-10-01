@@ -24,6 +24,7 @@ const base_fr = {
 "side-label-gallery":"Galerie",
 "gallery-title":"Images du dossier",
 "gallery-open-folder":"Ouvrir dossier",
+"gallery-path-refresh":"Cliquez pour actualiser le dossier",
 "comfyUI_workflowErrorHelp":"Veuillez vérifier que le Workflow configuré dans Workflow's fonctionne correctement. Dans les paramètres par défaut, vous devez sélectionner Model, VAE, etc. en fonction de votre environnement.",
 "comfyUI_workflowHelp":"Attention<br>・Vous pouvez spécifier quel Workflow utiliser pour chaque type. Si vous souhaitez utiliser votre propre Workflow, veuillez l'exporter depuis ComfyUI pour l'API et l'ajouter.</br>・La liste des modèles et autres éléments seront automatiquement mis à jour lorsque ComfyUI sera en ligne. Une fois mis à jour, la liste des modèles ComfyUI sera stockée dans le navigateur.</br>・Spécifier 0 pour seed et noise_seed les rendra aléatoires.</br>・Spécifier les éléments suivants dans le texte les remplacera:</br>%prompt%</br>Prompt positif</br>%negative%</br>Prompt négatif</br>",
 "comfyUI_addWorkflow":"Ajouter un Workflow API",

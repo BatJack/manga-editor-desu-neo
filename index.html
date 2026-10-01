@@ -1529,6 +1529,11 @@ function getElementClasses(element) {
                         </button>
                         <button id="gallery-watch-btn" onclick="galleryToggleWatch()">Watch</button>
                     </div>
+                    <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;" onclick="galleryRefreshFromPath()" data-i18n-title="gallery-path-refresh" role="button" tabindex="0">
+                        <i class="material-icons">history</i>
+                        <span id="gallery-path-text" class="gallery-path-text"></span>
+                        <i class="material-icons gallery-path-refresh-icon">refresh</i>
+                    </div>
                     <div id="gallery-info" class="gallery-info"></div>
                     <div id="gallery-sections"></div>
                 </div>

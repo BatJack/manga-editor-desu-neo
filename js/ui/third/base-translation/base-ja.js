@@ -24,6 +24,7 @@ const base_ja = {
 "side-label-gallery":"ギャラリー",
 "gallery-title":"フォルダ画像",
 "gallery-open-folder":"フォルダを開く",
+"gallery-path-refresh":"クリックでフォルダを再読み込み",
 "comfyUI_workflowErrorHelp":"Workflow'sから設定しているWorkflowが動作することを確認してください。初期設定ではModel, VAEなどを環境に合わせて選択する必要があります。",
 "comfyUI_workflowHelp":"注意<br>・タイプごとにWorkflowを指定できます。独自のWorkflowを使う場合はComfyUIからAPI用をExportして追加してください。</br>・ComfyUIがオンラインになると自動的にモデルリスト等が更新されます。一度でも更新するとComfyUIのモデルリストはブラウザに格納されます。</br>・seed, noise_seedに0を指定するとランダムになります。</br>・テキストに以下を指定すると置き換えます。</br>%prompt%</br>ポジティブプロンプト</br>%negative%</br>ネガティブプロンプト</br>",
 "comfyUI_addWorkflow":"API Workflowの追加",
