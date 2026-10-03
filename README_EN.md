@@ -1,6 +1,5 @@
-[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker) |
-[日本語](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_JP.md) |
-[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md)
+[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README.md) |
+[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_EN.md)
 
 # Manga Editor Desu! Pro Edition
 
@@ -61,7 +60,7 @@ A web-based manga creation tool with AI image generation support. Create profess
 - **Image Export** - Export pages for print or digital distribution
 
 ### Supported Languages
-English, Japanese, Korean, French, Chinese, Russian, Spanish, Portuguese, Thai, German
+English, Chinese
 
 <img src="https://new-sankaku.github.io/SP-MangaEditer-docs/02_trans.webp" height="300">
 

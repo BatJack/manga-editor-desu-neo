@@ -1,6 +1,6 @@
-[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker) | 
-[日本語](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_JP.md) | 
-[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md)
+[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md) |
+[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_EN.md)  
+
 
 # 漫画编辑器 Desu! 专业版
 
@@ -75,7 +75,7 @@ https://github.com/user-attachments/assets/6f1dae5f-b50f-4b04-8875-f0b07111f2ab
 
 
 ## 功能
-- **多语言支持**：英语、日语、韩语、法语、中文、俄语、西班牙语、葡萄牙语
+- **多语言支持**：英语、中文
 - **页面预设**：预设的漫画面板布局。
 - **面板**：创建和自定义面板。调整形状、颜色、线宽等。
 - **对话气泡**：超过40种对话气泡样式，每种样式都可以配置背景颜色、线条颜色和透明度。

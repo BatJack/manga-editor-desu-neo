@@ -4,7 +4,7 @@ const path=require('path');
 
 var i18nextPath=path.resolve(__dirname,'..','js','ui','third','i18next.js');
 var baseTranslationDir=path.resolve(__dirname,'..','js','ui','third','base-translation');
-var expectedLangs=['ja','en','ko','fr','zh','ru','es','de'];
+var expectedLangs=['en','zh'];
 
 function extractResources(filePath) {
 var content=fs.readFileSync(filePath,'utf-8');
@@ -32,14 +32,8 @@ depth--;
 i++;
 }
 var resourcesStr=content.substring(startIdx,i);
-resourcesStr=resourcesStr.replace(/\bbase_ja\b/g,'{}');
 resourcesStr=resourcesStr.replace(/\bbase_en\b/g,'{}');
-resourcesStr=resourcesStr.replace(/\bbase_ko\b/g,'{}');
-resourcesStr=resourcesStr.replace(/\bbase_fr\b/g,'{}');
 resourcesStr=resourcesStr.replace(/\bbase_zh\b/g,'{}');
-resourcesStr=resourcesStr.replace(/\bbase_ru\b/g,'{}');
-resourcesStr=resourcesStr.replace(/\bbase_es\b/g,'{}');
-resourcesStr=resourcesStr.replace(/\bbase_de\b/g,'{}');
 var fn=new Function('return ('+resourcesStr+');');
 return fn();
 }
