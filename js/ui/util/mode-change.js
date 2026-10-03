@@ -37,38 +37,37 @@ el.classList.remove("active");
 el.innerHTML="";
 }
 
+function applyTheme(mode){
+var isDark=mode==='dark-mode';
+document.documentElement.classList.remove('dark-mode','light-mode');
+document.documentElement.classList.add(mode);
+document.body.classList.remove('dark-mode','light-mode');
+document.body.classList.add(mode);
+var logo=$('navbar-logo');
+if(logo){logo.src=isDark?'02_images_svg/Logo/black_mode_logo.webp':'02_images_svg/Logo/light_mode_logo.webp';}
+var toggle=$('mode-toggle');
+if(toggle){toggle.checked=isDark;}
+}
+
 function toggleMode() {
-const isDarkMode=document.body.classList.toggle('dark-mode');
-const logo=$('navbar-logo');
-
-document.documentElement.classList.remove('light-mode');
-document.documentElement.classList.add('dark-mode');
-document.body.classList.remove('light-mode');
-document.body.classList.add('dark-mode');
-document.documentElement.classList.remove('light-mode');
-document.documentElement.classList.add('dark-mode');
-localStorage.setItem('mode','dark-mode');
-logo.src='02_images_svg/Logo/black_mode_logo.webp';
-
+var next=document.body.classList.contains('dark-mode')?'light-mode':'dark-mode';
+applyTheme(next);
+localStorage.setItem('mode',next);
 updateLayerPanel();
 }
 
 document.addEventListener('DOMContentLoaded',function() {
-$('mode-toggle').addEventListener('change',toggleMode);
+var toggle=$('mode-toggle');
+if(toggle){toggle.addEventListener('change',toggleMode);}
 });
 
 function initializeMode() {
-const mode='dark-mode';
-document.documentElement.classList.add(mode);
-document.body.classList.add(mode);
-document.documentElement.classList.add(mode);
-const logo=$('navbar-logo');
-if (mode==='dark-mode') {
-$('mode-toggle').checked=true;
-logo.src='02_images_svg/Logo/black_mode_logo.webp';
-} else {
-logo.src='02_images_svg/Logo/light_mode_logo.webp';
+var mode=null;
+try{mode=localStorage.getItem('mode');}catch(e){}
+if(mode!=='dark-mode'&&mode!=='light-mode'){
+mode=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light-mode':'dark-mode';
 }
+applyTheme(mode);
 }
 
 document.addEventListener('DOMContentLoaded',function() {

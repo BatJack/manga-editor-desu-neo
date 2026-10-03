@@ -48,7 +48,7 @@ input[type="range"] {
   margin-left: 2px;
   margin-bottom: -7px;
   width: calc(100% - 5px);
-  accent-color: var(--slider-accent);
+  accent-color: var(--accent);
 }
 .slider-container {
   display: flex;
@@ -70,12 +70,12 @@ input[type="range"] {
 }
 .slider-value-button:hover,
 .slider-value-button:focus-visible {
-  color: var(--component-text-color);
-  outline: 1px solid var(--slider-accent);
+  color: var(--text-0);
+  outline: 1px solid var(--accent);
   border-radius: 2px;
 }
 .jscolor-color-picker:focus-visible {
-  outline: 2px solid var(--slider-accent);
+  outline: var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -90,14 +90,14 @@ input[type="range"] {
 
 .jscolor-color-picker {
 margin-left:auto;
-margin-right:var(--input-margin);
-border:0 !important;
+margin-right:var(--space-2);
+border:1px solid var(--border-default);
 cursor:pointer;
-width:40px !important;
-max-width:40px !important;
-min-width:0 !important;
-height:20px !important;
-padding:0 !important;
-border-radius:var(--fjm-button-border-radius);
-box-sizing:border-box !important;
+width:40px;
+max-width:40px;
+min-width:0;
+height:20px;
+padding:0;
+border-radius:var(--radius-sm);
+box-sizing:border-box;
 }

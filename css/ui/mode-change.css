@@ -1,51 +1,71 @@
 
+/* ============================================================
+   THEME TOGGLE (light / dark switch)
+   ============================================================ */
+
+.theme-toggle-icon {
+  font-size: 16px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
 .toggle-switchTermaMode {
   position: relative;
   display: inline-block;
   width: 40px;
   height: 22px;
+  margin: 0 var(--space-2);
+  cursor: pointer;
 }
 
 .toggle-switchTermaMode input {
+  position: absolute;
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.slider {
+.toggle-switchTermaMode .slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-accent-hover);
-  transition: .4s;
-  border-radius: 22px;
+  inset: 0;
+  background-color: var(--bg-3);
+  border: 1px solid var(--border-default);
+  transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
+  border-radius: var(--radius-pill);
 }
 
-.slider:before {
+.toggle-switchTermaMode .slider:before {
   position: absolute;
   content: "";
   height: 16px;
   width: 16px;
-  left: 0px;
-  bottom: 3.5px;
-  background-color: var(--toggle-button-color);
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--text-1);
   border-radius: 50%;
+  transition: transform var(--dur-2) var(--ease), background-color var(--dur-2) var(--ease);
 }
 
-input:checked + .slider {
-  background-color: var(--checkbox-checked-background);
+.toggle-switchTermaMode input:checked + .slider {
+  background-color: var(--accent-dim);
+  border-color: var(--accent);
 }
 
-input:checked + .slider:before {
-  transform: translateX(16px);
+.toggle-switchTermaMode input:checked + .slider:before {
+  transform: translate(18px, -50%);
+  background-color: var(--accent);
 }
 
+.toggle-switchTermaMode input:focus-visible + .slider {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
 
-.toggled {
-  box-shadow: 0 0 5px 2px rgba(255, 132, 0, 0.4);
-  background-color: #b19400;
-  transition: all 0.2s ease;
+@media (prefers-reduced-motion: reduce) {
+  .toggle-switchTermaMode .slider,
+  .toggle-switchTermaMode .slider:before {
+    transition: none;
+  }
 }

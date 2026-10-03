@@ -46,11 +46,11 @@ font-size:13px;
 transition:background 0.2s,opacity 0.2s;
 }
 .tutorial-btn-primary{
-background:#3b82f6;
+background:var(--info);
 color:var(--color-text-primary);
 }
 .tutorial-btn-primary:hover{
-background:#2563eb;
+background:var(--info);
 }
 .tutorial-btn-secondary{
 background:var(--color-secondary);
@@ -76,7 +76,7 @@ pointer-events:none;
 }
 .tutorial-highlight{
 position:fixed;
-border:2px solid #3b82f6;
+border:2px solid var(--info);
 border-radius:var(--fjm-border-radius);
 box-shadow:0 0 0 9999px rgba(0,0,0,0.7);
 pointer-events:none;
@@ -130,7 +130,7 @@ gap:10px;
 margin-bottom:12px;
 }
 .tutorial-step-indicator{
-background:#3b82f6;
+background:var(--info);
 color:var(--color-text-primary);
 padding:3px 10px;
 border-radius:var(--fjm-button-border-radius);
@@ -180,7 +180,7 @@ color:var(--color-text-secondary);
 }
 .tutorial-dont-show input{
 cursor:pointer;
-accent-color:#3b82f6;
+accent-color:var(--info);
 }
 .tutorial-context-overlay{
 position:fixed;
@@ -202,7 +202,7 @@ padding:10px 14px;
 border:1px solid var(--color-secondary);
 border-radius:var(--fjm-button-border-radius);
 background:var(--color-base);
-color:#b0b0b0;
+color:var(--text-2);
 cursor:pointer;
 font-size:13px;
 transition:all 0.15s;
@@ -220,8 +220,8 @@ background:var(--color-secondary);
 color:var(--color-text-secondary);
 }
 .tutorial-lang-btn.active{
-border-color:#3b82f6;
-background:#1e3a5f;
+border-color:var(--info);
+background:var(--bg-3);
 color:var(--color-text-primary);
 }
 .comfyui-setup-guide,.comfyui-error-guide{
@@ -240,25 +240,25 @@ background:var(--color-base);
 border-bottom:1px solid var(--color-secondary);
 }
 .guide-header.error{
-background:#2a1f1f;
-border-bottom-color:#4a2a2a;
+background:var(--bg-1);
+border-bottom-color:var(--border-default);
 }
 .comfyui-setup-guide.warning{
-border-color:#5a4a1a;
+border-color:var(--border-default);
 }
 .guide-header.warning{
-background:#2a2510;
-border-bottom-color:#5a4a1a;
+background:var(--bg-2);
+border-bottom-color:var(--border-default);
 }
 .guide-header.warning .guide-title{
-color:#fbbf24;
+color:var(--warn);
 }
 .step-num.warn{
-background:#d97706;
+background:var(--warn);
 }
 .guide-step.highlight.warn{
-border-left-color:#d97706;
-background:#2a2510;
+border-left-color:var(--warn);
+background:var(--bg-2);
 }
 .guide-icon{
 font-size:16px;
@@ -270,7 +270,7 @@ font-size:13px;
 color:var(--color-text-primary);
 }
 .guide-header.error .guide-title{
-color:#f87171;
+color:var(--danger);
 }
 .guide-close{
 background:none;
@@ -304,10 +304,10 @@ background:var(--color-base);
 padding:10px;
 border-radius:var(--fjm-border-radius);
 margin:10px 0;
-border-left:2px solid #3b82f6;
+border-left:2px solid var(--info);
 }
 .step-num{
-background:#3b82f6;
+background:var(--info);
 color:var(--color-text-primary);
 width:20px;
 height:20px;
@@ -320,20 +320,20 @@ font-weight:500;
 flex-shrink:0;
 }
 .guide-error-nodes{
-background:#2a1f1f;
+background:var(--bg-1);
 padding:10px;
 border-radius:var(--fjm-border-radius);
 margin-bottom:12px;
 font-size:12px;
-color:#f87171;
-border-left:2px solid #ef4444;
+color:var(--danger);
+border-left:2px solid var(--danger);
 }
 .guide-error-nodes code{
 background:var(--color-base);
 padding:2px 6px;
 border-radius:var(--fjm-button-border-radius);
 font-family:monospace;
-color:#fca5a5;
+color:var(--danger);
 font-size:11px;
 }
 .guide-tip,.guide-example{
@@ -346,7 +346,7 @@ color:var(--slider-accent);
 line-height:1.5;
 }
 .guide-example{
-border-left:2px solid #3b82f6;
+border-left:2px solid var(--info);
 }
 .guide-footer{
 padding:10px 14px;

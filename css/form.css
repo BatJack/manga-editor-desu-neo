@@ -6,9 +6,10 @@ body {
 }
 
 hr {
- height: 3px;
- margin: 4px !important;
- background: var(--text-border);
+ height: 1px;
+ border: none;
+ margin: 6px 4px;
+ background: var(--border-subtle);
 }
 
 .ms-auto {
@@ -177,7 +178,7 @@ button {
  background: var(--btn-bg);
  color: var(--button-text-color);
  border: var(--btn-border);
- border-radius: var(--fjm-button-border-radius);
+ border-radius: var(--radius-sm);
  cursor: pointer;
  padding: var(--padding-button);
  font-size: var(--font-size-button);
@@ -193,9 +194,17 @@ button:hover {
 }
 
 button:active {
- background: rgba(255,255,255,0.05);
+ background: var(--hover-strong);
+ transform: translateY(1px);
  transition: none;
 }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
 
 button.btn-danger {
  background: var(--btn-danger-bg);
@@ -268,19 +277,18 @@ legend {
 }
 
 ::-webkit-input-placeholder {
- color: var(--color-dark-grey);
+ color: var(--text-2);
+ opacity: 1;
 }
 
 ::-moz-placeholder {
- color: var(--color-dark-grey);
+ color: var(--text-2);
+ opacity: 1;
 }
 
-:-ms-input-placeholder {
- color: var(--color-dark-grey);
-}
-
-:-moz-placeholder {
- color: var(--color-dark-grey);
+::placeholder {
+ color: var(--text-2);
+ opacity: 1;
 }
 
 table {

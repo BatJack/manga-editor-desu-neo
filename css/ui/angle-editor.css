@@ -54,7 +54,7 @@ flex-direction:column;
 align-items:center;
 justify-content:center;
 padding:10px;
-background-color:#0a0a0f;
+background-color:var(--bg-0);
 min-height:0;
 min-width:0;
 gap:8px;
@@ -66,16 +66,16 @@ min-height:200px;
 }
 #angle-camera-prompt-display{
 font-size:13px;
-color:#e93d82;
+color:var(--accent);
 text-align:center;
 min-height:20px;
 padding:4px;
 }
 #angle-camera-reset-btn{
 padding:4px 16px;
-border:1px solid #e93d82;
+border:1px solid var(--accent);
 background:transparent;
-color:#e93d82;
+color:var(--accent);
 cursor:pointer;
 border-radius:var(--fjm-button-border-radius);
 font-size:12px;
@@ -163,8 +163,8 @@ background-color:var(--background-color-C);
 }
 #angle-generate-btn{
 padding:8px 20px;
-background-color:var(--accent-color,#4a90d9);
-color:#fff;
+background-color:var(--accent-color,var(--accent));
+color:#ffffff;
 border:none;
 border-radius:var(--fjm-button-border-radius);
 cursor:pointer;

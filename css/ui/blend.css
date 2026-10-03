@@ -352,11 +352,11 @@ font-size:28px
 
 .layer-preview-blend.unchecked .layer-status-overlay {
 background-color:rgba(0,0,0,0.3);
-color:#ff4444
+color:var(--danger)
 }
 
 .layer-preview-blend.checked .layer-status-overlay {
-color:#44ff44
+color:var(--ok)
 }
 
 .layer-checkbox-blend {

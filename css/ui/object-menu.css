@@ -61,28 +61,28 @@ overflow: hidden;
 }
 
 .fabricjs-object-menu .menu-ai-action {
-background-color: rgba(106,58,180,0.18);
+background-color: var(--accent-dim);
 }
 
 .fabricjs-object-menu .menu-ai-action:hover {
-background-color: rgba(106,58,180,0.35);
+background-color: var(--accent-dim);
 }
 
 .fabricjs-object-menu .menu-ai-action .menu-btn-icon {
-color: #b388ff;
+color: var(--accent-hover);
 }
 
 .fabricjs-object-menu .menu-destructive {
-color: #ff6b6b;
+color: var(--danger);
 }
 
 .fabricjs-object-menu .menu-destructive:hover {
-background-color: rgba(255,80,80,0.2);
-color: #ff4444;
+background-color: var(--btn-danger-hover-bg);
+color: var(--danger);
 }
 
 .fabricjs-object-menu .menu-destructive .menu-btn-icon {
-color: #ff6b6b;
+color: var(--danger);
 }
 
 .menu-separator {

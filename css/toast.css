@@ -11,7 +11,7 @@
  
  .toast-nier {
   background: rgba(238, 238, 238, .97);
-  color: #454545;
+  color: var(--text-1);
   padding: 12px 16px;
   font-family: 'Share Tech Mono', monospace; ;
   font-weight: 300;
@@ -27,7 +27,7 @@
   left: 3px;
   right: 3px;
   bottom: 3px;
-  border: 1px solid #454545;
+  border: 1px solid var(--text-1);
  }
  
  .toast-nier .toast-title {
@@ -35,7 +35,7 @@
   text-transform: uppercase;
   margin-bottom: 4px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-0);
   letter-spacing: 2px;
   border-bottom: 1px solid rgba(69, 69, 69, 0.3);
   padding-bottom: 4px;
@@ -61,10 +61,10 @@
  
  .toast-dbd {
   background: rgba(20, 0, 0, 0.95);
-  color: #ff3333;
+  color: var(--danger);
   padding: 10px 14px;
   font-family: 'Roboto Condensed', sans-serif;
-  border: 1px solid #800;
+  border: 1px solid var(--danger);
   position: relative;
   text-transform: uppercase;
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.2), inset 0 0 15px rgba(255, 0, 0, 0.1);
@@ -100,7 +100,7 @@
   text-transform: uppercase;
   margin-bottom: 6px;
   font-weight: bold;
-  color: #ff6666;
+  color: var(--danger);
   letter-spacing: 2px;
   border-bottom: 1px solid rgba(255, 102, 102, 0.3);
   padding-bottom: 4px;

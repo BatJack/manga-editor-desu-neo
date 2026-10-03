@@ -26,6 +26,8 @@ const base_es = {
 "gallery-open-folder":"Abrir carpeta",
 "gallery-path-refresh":"Haga clic para actualizar la carpeta",
 "gallery-path-clear":"Eliminar carpeta guardada",
+"gallery-clear-all":"Borrar todo",
+"gallery-remove-folder":"Eliminar esta carpeta",
 "comfyUI_workflowErrorHelp":"Por favor, verifique que el Workflow configurado en Workflow's esté funcionando correctamente. En la configuración predeterminada, necesita seleccionar Model, VAE, etc. según su entorno.",
 "comfyUI_workflowHelp":"Atención<br>・Puede especificar qué Workflow usar para cada tipo. Si desea utilizar su propio Workflow, expórtelo desde ComfyUI para API y agréguelo.</br>・La lista de modelos y otros elementos se actualizarán automáticamente cuando ComfyUI esté en línea. Una vez actualizado, la lista de modelos de ComfyUI se almacenará en el navegador.</br>・Especificar 0 para seed y noise_seed los hará aleatorios.</br>・Especificar lo siguiente en el texto los reemplazará:</br>%prompt%</br>Prompt positivo</br>%negative%</br>Prompt negativo</br>",
 "comfyUI_addWorkflow":"Agregar API Workflow",

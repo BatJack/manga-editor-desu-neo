@@ -193,6 +193,19 @@ function getElementClasses(element) {
         });
     </script>
 <!-- ========== CSS Stylesheets ========== -->
+<script>
+        /* Apply the saved theme before first paint to avoid a flash of the wrong theme. */
+        (function () {
+            try {
+                var m = localStorage.getItem('mode');
+                if (m !== 'dark-mode' && m !== 'light-mode') {
+                    m = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light-mode' : 'dark-mode';
+                }
+                document.documentElement.classList.remove('dark-mode', 'light-mode');
+                document.documentElement.classList.add(m);
+            } catch (e) { }
+        })();
+    </script>
 <link rel="stylesheet" href="css/core/main-component.css?v=7.2">
 <link rel="stylesheet" href="css/css2.css?v=7.2">
 <link rel="stylesheet" href="css/icon.css?v=7.2">
@@ -225,7 +238,7 @@ function getElementClasses(element) {
 <link rel="stylesheet" href="css/tagify.css?v=7.2" media="print" onload="this.media='all'">
 
 <link rel="stylesheet" href="css/ui/font-manager.css?v=7.2" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/ui/gallery.css?v=7.3">
+<link rel="stylesheet" href="css/ui/gallery.css?v=7.4">
 
 <script src="https://cdn.jsdelivr.net/npm/stacktrace-js/dist/stacktrace.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.31.3/tagify.min.js"></script>
@@ -628,16 +641,16 @@ function getElementClasses(element) {
                     <li class="nav-item d-flex" >
                      <button data-i18n="pwa_install" id="pwa-install-button" class="btn btn-outline-secondary me-2" style="margin-top: 5px; padding-top: 0px; padding-bottom: 0px; padding-left: 10px;padding-right: 10px;"></button>
                     </li>
-                    <li class="nav-item d-flex align-items-center my-2 d-none">
-                     <i class="fas fa-sun"></i>
-                     <label class="toggle-switchTermaMode mx-2">
-                      <input type="checkbox" id="mode-toggle">
+                    <li class="nav-item d-flex align-items-center my-2">
+                     <i class="material-icons theme-toggle-icon" aria-hidden="true">light_mode</i>
+                     <label class="toggle-switchTermaMode mx-2" for="mode-toggle" title="Toggle light / dark theme">
+                      <input type="checkbox" id="mode-toggle" role="switch" aria-label="Toggle light / dark theme">
                       <span class="slider">
                        <span class="mode-icons">
                        </span>
                       </span>
                      </label>
-                     <i class="fas fa-moon"></i>
+                     <i class="material-icons theme-toggle-icon" aria-hidden="true">dark_mode</i>
                     </li>
                 </ul>
             </div>
@@ -1528,6 +1541,9 @@ function getElementClasses(element) {
                             <span data-i18n="gallery-open-folder">フォルダを開く</span>
                         </button>
                         <button id="gallery-watch-btn" onclick="galleryToggleWatch()">Watch</button>
+                        <button id="gallery-clear-all-btn" onclick="galleryClearAll()" data-i18n="gallery-clear-all" data-i18n-title="gallery-clear-all" aria-label="Clear all folders">
+                            <i class="material-icons">delete_sweep</i>
+                        </button>
                     </div>
                     <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;" onclick="galleryRefreshFromPath()" data-i18n-title="gallery-path-refresh" role="button" tabindex="0">
                         <i class="material-icons">history</i>
@@ -2119,7 +2135,7 @@ function getElementClasses(element) {
     <script src="js/core/svg/google-icon-names.js?v=7.2"></script>
     <script src="js/core/svg/google-icon-helper.js?v=7.2"></script>
     <script src="js/ui/bottom-bar.js?v=7.2" defer></script>
-    <script src="js/ui/gallery.js?v=7.3" defer></script>
+    <script src="js/ui/gallery.js?v=7.4" defer></script>
 
     <script src="js/ai/prompt/auto/prompt-map.js?v=7.2" defer></script>
     <script src="js/ai/prompt/auto/story-prompt-map.js?v=7.2" defer></script>

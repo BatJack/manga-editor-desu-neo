@@ -79,7 +79,7 @@
 
 
 .fm-fontInputContainer button {
-  background: #2c5cff;
+  background: var(--accent);
   color: var(--color-text-primary);
   border: none;
   padding: 6px 12px;
@@ -90,7 +90,7 @@
 }
 
 .fm-fontInputContainer button:hover {
-  background: #1e4aeb;
+  background: var(--accent-hover);
 }
 
 .fm-fontInputContainer textarea {
@@ -109,7 +109,7 @@
 
 .fm-fontInputContainer textarea:focus {
   outline: none;
-  border-color: #2c5cff;
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(44, 92, 255, 0.2);
 }
 
