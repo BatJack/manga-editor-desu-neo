@@ -25,6 +25,7 @@ const base_de = {
 "gallery-title":"Ordnerbilder",
 "gallery-open-folder":"Ordner öffnen",
 "gallery-path-refresh":"Klicken, um den Ordner zu aktualisieren",
+"gallery-path-clear":"Gespeicherten Ordner entfernen",
 "comfyUI_workflowErrorHelp":"Bitte überprüfen Sie, ob der in Workflow's konfigurierte Workflow ordnungsgemäß funktioniert. In den Standardeinstellungen müssen Sie Model, VAE usw. entsprechend Ihrer Umgebung auswählen.",
 "comfyUI_workflowHelp":"Achtung<br>・Sie können für jeden Typ festlegen, welcher Workflow verwendet werden soll. Wenn Sie Ihren eigenen Workflow verwenden möchten, exportieren Sie ihn bitte von ComfyUI für API und fügen Sie ihn hinzu.</br>・Die Modellliste und andere Elemente werden automatisch aktualisiert, wenn ComfyUI online ist. Nach der Aktualisierung wird die ComfyUI-Modellliste im Browser gespeichert.</br>・Wenn Sie für seed und noise_seed 0 angeben, werden sie zufällig generiert.</br>・Die Angabe des Folgenden im Text wird ersetzt:</br>%prompt%</br>Positiver Prompt</br>%negative%</br>Negativer Prompt</br>",
 "comfyUI_addWorkflow":"API Workflow hinzufügen",

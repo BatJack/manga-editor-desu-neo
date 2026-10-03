@@ -25,6 +25,7 @@ const base_ko = {
 "gallery-title":"폴더 이미지",
 "gallery-open-folder":"폴더 열기",
 "gallery-path-refresh":"클릭하여 폴더 새로고침",
+"gallery-path-clear":"저장된 폴더 삭제",
 "comfyUI_workflowErrorHelp":"Workflow's에서 설정한 Workflow가 제대로 작동하는지 확인하세요. 기본 설정에서는 환경에 맞게 Model, VAE 등을 선택해야 합니다.",
 "comfyUI_workflowHelp":"주의<br>・유형별로 사용할 Workflow를 지정할 수 있습니다. 원하는 Workflow를 사용하려면 API용으로 ComfyUI에서 내보내기하여 추가하세요.</br>・ComfyUI가 온라인 상태가 되면 모델 목록 등이 자동으로 업데이트됩니다. 한 번이라도 업데이트하면 ComfyUI의 모델 목록이 브라우저에 저장됩니다.</br>・seed, noise_seed에 0을 지정하면 무작위가 됩니다.</br>・텍스트에 다음을 지정하면 대체됩니다:</br>%prompt%</br>긍정적 프롬프트</br>%negative%</br>부정적 프롬프트</br>",
 "comfyUI_addWorkflow":"API Workflow 추가",

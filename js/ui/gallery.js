@@ -117,6 +117,27 @@ function galleryPersistDirHandle(handle) {
     });
 }
 
+// Remove only the persisted saved-path record — loaded images and watch mode stay untouched
+function galleryClearSavedPath(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    try {
+        localStorage.removeItem(GALLERY_LAST_PATH_KEY);
+    } catch (err) {
+        galleryLogger.warn('Failed to remove last gallery path: ' + err);
+    }
+    var storage = galleryDirStorage();
+    if (storage) {
+        storage.removeItem('dirHandle').catch(function (err) {
+            galleryLogger.warn('Failed to remove persisted directory handle: ' + err);
+        });
+    }
+    galleryUpdatePathBar('');
+    galleryLogger.info('Gallery saved path cleared');
+}
+
 // ── chunked render ─────────────────────────────────────────
 
 function galleryRenderGroups(imageFiles, infoEl) {
@@ -581,6 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pathBar = document.getElementById('gallery-path-bar');
     if (pathBar) {
         pathBar.addEventListener('keydown', function (e) {
+            if (e.target !== pathBar) return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 galleryRefreshFromPath();
