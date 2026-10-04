@@ -34,7 +34,6 @@ const base_zh = {
 "comfyUI_testGenerate":"测试生成",
 "flipHorizontal":"水平翻转",
 "flipVertical":"垂直翻转",
-"DevelopmentDonations":"开发捐赠",
 "20260214150000_000":"法律信息",
 "com-opacity":"透明度",
 "com-lineWidth":"线条粗细",

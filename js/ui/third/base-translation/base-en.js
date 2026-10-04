@@ -34,7 +34,6 @@ const base_en = {
 "comfyUI_testGenerate":"Test Generate",
 "flipHorizontal":"Flip Horizontal",
 "flipVertical":"Flip Vertical",
-"DevelopmentDonations":"Donate",
 "20260214150000_000":"Legal",
 "com-opacity":"Opacity",
 "com-lineWidth":"Line width",
