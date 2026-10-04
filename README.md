@@ -6,7 +6,7 @@
 
 这是一款连接ComfyUI、A1111 WebUI和Forge的漫画创作Web应用程序。  
 您可以使用演示网站或下载后在浏览器中运行。  
-*注：由于A1111/Forge的开发前景不明确，我们计划在未来仅支持ComfyUI。
+*注：1.由于A1111/Forge的开发前景不明确，我们计划在未来仅支持ComfyUI。2.仅支持Edge和Chrome浏览器。*
 
 支持状态：
 - ComfyUI：SD1.5、SDXL、Pony、Flux1（您也可以使用自己的工作流）
