@@ -2,7 +2,7 @@
 - 常に敬語を使う
 - サブエージェントはOpus/Sonnet使用（Haiku禁止）
 - `file://`プロトコルで動作必須
-  - ギャラリーのみ/フォルダの閲覧は成立するが、パス記憶とWatch監視は `http://localhost:8000` でのみ有効（BraveはFile System Access APIを実装していないため、`99_server.py`のローカルブリッジを使う）。詳細: `docs/superpowers/specs/2026-10-04-gallery-local-fs-bridge-design.md`
+  - ギャラリーは**Chrome / Edge のみ**フル機能。パス記憶とWatch監視はFile System Access API（`showDirectoryPicker`）に依存し、他ブラウザでは`input`モード（閲覧のみ）に降格する。`99_server.py`が起動時にブラウザを検出する
 - UI変更は既存表示と調和させる
 - fallback禁止（ユーザー誤認防止）
 - 文言は既存と表記統一（同義で別表記にしない）

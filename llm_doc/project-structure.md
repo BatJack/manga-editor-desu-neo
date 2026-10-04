@@ -34,40 +34,39 @@ manga-editor-desu/
 ├── html/               HTMLテンプレート
 ├── llm_doc/            LLM向けドキュメント
 ├── scripts/            ユーティリティスクリプト（format, translation check）
-├── 99_server.py        開発サーバ（127.0.0.1:8000）。ギャラリー用APIをhosts
-├── gallery_fs_api.py   ギャラリー用ファイルシステムブリッジ（パス検証・走査・認可）
+├── 99_server.py        開発サーバ（127.0.0.1:8000）。静的ファイル配信のみ
+├── browser_launcher.py Chrome → Edge → 既定ブラウザの検出と起動
 └── 99_tests/           Pythonユニットテスト（test/は機能サンドボックスなので使わない）
 ```
 
-## ギャラリーAPI（99_server.py）
-ギャラリーがローカルディレクトリを購読するための読み取り専用エンドポイント。
-`File System Access API`が使えないブラウザ（Braveなど）向けの代替経路。
+## サーバー（99_server.py）
+静的ファイルを配信するだけの開発サーバ。APIエンドポイントは存在しない。
 
 - バインドは`127.0.0.1`のみ。`Access-Control-Allow-Origin`は付与しない
-- 起動時にランダムtokenをコンソールへ出力。API要求は`X-Gallery-Token`必須
-- `Host`ヘッダと`Sec-Fetch-Site`も検証（DNSリバインディング対策）
-
-| エンドポイント | 説明 |
-|---|---|
-| `GET /api/fs/session` | トークン発行。同オリジンのみ |
-| `GET /api/fs/list?path=` | ディレクトリ内のフォルダと画像を返す |
-| `GET /api/fs/image?path=&name=` | 画像1件のバイナリを返す |
-
-- 絶対パスのみ。`..`・NULLバイト・パス区切りを含む名前は拒否
-- 書き込み系エンドポイントは存在しない（読み取り専用）
+- 起動時に`browser_launcher.py`でブラウザを検出して自動オープンする
 - 検証: `python -m unittest discover -s 99_tests -v`
 
+## ブラウザ起動（browser_launcher.py）
+ギャラリーのフル機能には`File System Access API`が必要で、Chromium系のみ対応。
+そのため起動時に対応ブラウザを優先して開く。
+
+1. レジストリ`App Paths`（HKLM → HKCU）
+2. 常见安装路径（`ProgramFiles` / `ProgramFiles(x86)` / `LocalAppData`）
+3. どちらも無ければ既定ブラウザで開き、ギャラリー機能受限の警告を出力
+
 ## ギャラリーのソースモード
-`js/ui/gallery.js`の`galleryState.sourceMode`で3形態を切り替える。
+`js/ui/gallery.js`の`galleryState.sourceMode`で2形態を切り替える。
 
 | モード | 条件 | パス記憶 | Watch |
 |---|---|---|---|
 | `handle` | `showDirectoryPicker`あり（Chrome/Edge） | 可（IndexedDBにハンドル保存） | 可 |
-| `server` | API到達可（Brave + localhost） | 可（絶対パスを文字列保存） | 可 |
-| `input` | `file://`など | 不可（webkdirectoryは絶対パスを持たない） | 不可 |
+| `input` | それ以外（Firefox/Safari/Brave等） | 不可（webkitdirectoryは絶対パスを持たない） | 不可 |
 
-- `input`モードでは画面に低下モードの注意書きを表示する
-- `server`モードの保存キーは`path::<絶対パス>`。葉名が同じフォルダを区別するため
+- `input`モードでは画面に非対応ブラウザの注意書きを表示する
+- ハンドルの保存にはlocalforageではなくIndexedDBを直接使う（localforageは
+  JSON直列化するため`FileSystemDirectoryHandle`が`{}`になる）
+- `FileSystemDirectoryHandle.values()`は`next()`はあるが`then()`を持たない。
+  `galleryEachHandleEntry()`を使うこと
 
 ## 主要グローバル変数
 | 変数 | 説明 |

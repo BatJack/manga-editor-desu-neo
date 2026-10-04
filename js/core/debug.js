@@ -386,81 +386,6 @@ console.warn('[Test Skip] gallery handle store or IndexedDB not available');
 return false;
 }
 
-// Folder-name keys must stay distinct by FULL path, not leaf name:
-// D:\a\shots and D:\b\shots are different folders with the same leaf.
-function testGalleryServerPathKeys(){
-if(typeof galleryServerPathKey!=='undefined'){
-TestRunner.reset();
-TestRunner.assertEquals('path::D:\\a\\shots',galleryServerPathKey('D:\\a\\shots'),'Key uses the full path');
-TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\b\\shots'),'Same leaf name, different parents stay distinct');
-TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\A\\SHOTS'),'Key comparison is case-sensitive');
-return TestRunner.printResults('Gallery Server Path Keys');
-}
-console.warn('[Test Skip] gallery server source not loaded');
-return false;
-}
-
-// Up is bounded by the drive/root, not by wherever the picker happened to
-// start: with drive-bounded navigation the picker must reach a drive letter and
-// must never be able to walk above it.
-function testGalleryPickerModel(){
-if(typeof galleryPickerShouldShowUp!=='undefined'&&typeof galleryPickerRootOf!=='undefined'){
-TestRunner.reset();
-TestRunner.assertEquals('C:\\',galleryPickerRootOf('C:\\Users\\Bob'),'Root of a nested Windows path');
-TestRunner.assertEquals('D:\\',galleryPickerRootOf('D:'),'A bare drive letter is normalised to a root');
-TestRunner.assertEquals('/',galleryPickerRootOf('/home/user'),'Root of a POSIX path');
-TestRunner.assertEquals('C:\\',galleryPickerParentOf('C:\\Users'),'Parent of C:\\Users is the drive root, not "C:"');
-TestRunner.assertEquals('D:\\',galleryPickerParentOf('D:\\art\\raw'),'Parent climbs one level and keeps the separator');
-TestRunner.assertEquals('',galleryPickerParentOf('C:\\'),'A drive root has no parent');
-TestRunner.assertEquals('',galleryPickerParentOf('/'),'The POSIX root has no parent');
-TestRunner.assertEquals('/',galleryPickerParentOf('/home'),'Parent of /home is /');
-TestRunner.assert(galleryPickerShouldShowUp('C:\\Users'),'Up is offered inside a drive');
-TestRunner.assert(galleryPickerShouldShowUp('C:\\Users\\Bob\\pics'),'Up is offered deep inside a drive');
-TestRunner.assert(!galleryPickerShouldShowUp('C:\\'),'Up is hidden at a drive root');
-TestRunner.assert(!galleryPickerShouldShowUp('/'),'Up is hidden at the POSIX root');
-TestRunner.assert(!galleryPickerShouldShowUp(''),'Up is hidden with no path');
-return TestRunner.printResults('Gallery Picker Model');
-}
-console.warn('[Test Skip] gallery folder picker not loaded');
-return false;
-}
-
-function testGalleryWatchDiff(){
-if(typeof galleryDiffImages!=='undefined'){
-TestRunner.reset();
-const before=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:1000,size:1}];
-const after=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:2000,size:9},{name:'c.png',mtime:3000,size:3}];
-const added=galleryDiffImages(before,after);
-TestRunner.assertEquals(1,added.filter(x=>x.name==='c.png').length,'New file detected');
-TestRunner.assertEquals(0,added.filter(x=>x.name==='a.png').length,'Unchanged file not re-added');
-TestRunner.assertEquals(1,added.filter(x=>x.name==='b.png').length,'Modified file treated as changed');
-TestRunner.assertEquals(3,galleryDiffImages([],after).length,'Empty baseline yields every image');
-return TestRunner.printResults('Gallery Watch Diff');
-}
-console.warn('[Test Skip] gallery watch diff not loaded');
-return false;
-}
-
-// gallerySyncRoot removes every entry of a root that is absent from the list
-// it is handed. A watch update must therefore pass existing + new files, or
-// each poll would delete everything loaded by the previous one.
-function testGalleryWatchFileSet(){
-if(typeof galleryWatchFileSet!=='undefined'){
-TestRunner.reset();
-const existing=[{name:'a.png'},{name:'b.png'}];
-const added=[{name:'c.png'}];
-const merged=galleryWatchFileSet(existing,added);
-TestRunner.assertEquals(3,merged.length,'Existing files are retained alongside new ones');
-TestRunner.assertEquals('a.png',merged[0].name,'Existing files come first and are not dropped');
-TestRunner.assertEquals('c.png',merged[2].name,'New files are appended');
-TestRunner.assertEquals(2,galleryWatchFileSet(existing,[]).length,'No new files still yields the full set');
-TestRunner.assertEquals(1,galleryWatchFileSet([],added).length,'Empty baseline yields just the new files');
-TestRunner.assertEquals(0,galleryWatchFileSet(null,null).length,'Null inputs are tolerated');
-return TestRunner.printResults('Gallery Watch File Set');
-}
-console.warn('[Test Skip] gallery watch file set not loaded');
-return false;
-}
 
 // FileSystemDirectoryHandle.values() returns an AsyncIterableIterator, not a
 // Promise - it has no .then(). galleryWalkHandle already iterates it correctly;
@@ -512,10 +437,6 @@ colorConversion:testColorConversion()
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
 results.galleryHandleStore=await testGalleryHandleStore();
-results.galleryServerPathKeys=testGalleryServerPathKeys();
-results.galleryPickerModel=testGalleryPickerModel();
-results.galleryWatchDiff=testGalleryWatchDiff();
-results.galleryWatchFileSet=testGalleryWatchFileSet();
 results.galleryHandleIteration=await testGalleryHandleIteration();
 
 console.log('%c========================================','color:blue;font-weight:bold');
