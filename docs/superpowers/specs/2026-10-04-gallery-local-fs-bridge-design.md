@@ -120,11 +120,17 @@ Brave 中该函数为 `undefined`（不是调用失败）。现有代码 `js/ui/
 // 统一接口
 {
   kind: 'handle' | 'server' | 'input',
-  list(): Promise<Array<{name, mtime, size}>>,   // 列出目录下图片
+  // 列出目录内容。文件夹与图片分开返回：目录选择器需要 folders，
+  // 画廊渲染只需要 images。
+  list(path): Promise<{ folders: Array<{name, path}>,
+                        images: Array<{name, mtime, size}> }>,
   readImage(name): Promise<Blob>,
   capabilities: { remember: bool, watch: bool }
 }
 ```
+
+`handle` 模式无 `path` 参数概念（句柄即目录本身），`list()` 忽略该参数。
+`input` 模式无目录枚举能力，`list()` 返回已由 input 提供的文件列表。
 
 | 模式 | 触发条件 | remember | watch |
 |---|---|---|---|
@@ -186,8 +192,10 @@ Brave 无原生选择器，需自建文件夹浏览面板：
 
 沿用既有模式（`await window.runAllTests()`），新增：
 
-- `testGalleryPathSafety` — 路径规范化与拒绝逻辑
-- 后端模式探测：mock 三种环境，断言选中正确的 `sourceKind` 与 `capabilities`
+- `testGallerySourceMode` — mock 三种环境（handle 可用 / API 可达 / 均不可用），断言选中正确的 `sourceKind` 与 `capabilities`
+- `testGalleryPathMerge` — 路径记忆在 `handle` 与 `server` 两种模式下的存取与排序
+
+路径安全校验（§3.3）在 Python 侧实现，其测试见 §5.1，不在 JS 测试范围内。
 
 `testGalleryHandleStore`（昨日新增）保持不变，`handle` 模式继续有效。
 
