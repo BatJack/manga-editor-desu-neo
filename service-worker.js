@@ -1,5 +1,5 @@
 // Service Worker: Cache management for HTTP/HTTPS deployment
-var CACHE_VERSION='manga-editor-v1';
+var CACHE_VERSION='manga-editor-v3';
 var STATIC_EXTENSIONS=[
 '.css','.js','.png','.jpg','.jpeg','.gif','.svg','.ico',
 '.woff','.woff2','.ttf','.eot','.otf',
@@ -59,6 +59,26 @@ var clone=response.clone();
 caches.open(CACHE_VERSION).then(function(cache){
 cache.put(event.request,clone);
 });
+return response;
+}).catch(function(){
+return caches.match(event.request);
+})
+);
+return;
+}
+
+// HTML and page navigations: network-first so markup edits take effect on the
+// next reload, with the cache kept only as an offline fallback. Versioned ?v=
+// assets below remain cache-first.
+if(event.request.mode==='navigate'||url.pathname.toLowerCase().endsWith('.html')){
+event.respondWith(
+fetch(event.request).then(function(response){
+if(response&&response.status===200){
+var clone=response.clone();
+caches.open(CACHE_VERSION).then(function(cache){
+cache.put(event.request,clone);
+});
+}
 return response;
 }).catch(function(){
 return caches.match(event.request);

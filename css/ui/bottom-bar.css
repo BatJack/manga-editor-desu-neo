@@ -19,7 +19,7 @@ background-color:var(--bg-1);
 border-top:1px solid var(--border-subtle);
 border-top-left-radius:var(--radius-md);
 border-top-right-radius:var(--radius-md);
-transition:transform var(--dur-2) var(--ease), width var(--dur-2) var(--ease), left var(--dur-2) var(--ease), border-radius var(--dur-2) var(--ease);
+transition:transform var(--dur-3) var(--ease-spring), width var(--dur-2) var(--ease), left var(--dur-2) var(--ease), border-radius var(--dur-2) var(--ease);
 z-index:var(--z-bottom-drawer);
 box-shadow:var(--elev-2);
 }

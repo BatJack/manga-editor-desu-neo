@@ -238,7 +238,7 @@ function getElementClasses(element) {
 <link rel="stylesheet" href="css/tagify.css?v=7.2" media="print" onload="this.media='all'">
 
 <link rel="stylesheet" href="css/ui/font-manager.css?v=7.2" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/ui/gallery.css?v=7.4">
+<link rel="stylesheet" href="css/ui/gallery.css?v=7.5">
 
 <script src="https://cdn.jsdelivr.net/npm/stacktrace-js/dist/stacktrace.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.31.3/tagify.min.js"></script>
@@ -1495,11 +1495,15 @@ function getElementClasses(element) {
                             <i class="material-icons">delete_sweep</i>
                         </button>
                     </div>
-                    <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;" onclick="galleryRefreshFromPath()" data-i18n-title="gallery-path-refresh" role="button" tabindex="0">
-                        <i class="material-icons">history</i>
-                        <span id="gallery-path-text" class="gallery-path-text"></span>
-                        <i class="material-icons gallery-path-refresh-icon">refresh</i>
-                        <button type="button" class="gallery-path-clear-btn" onclick="galleryClearSavedPath(event)" data-i18n-title="gallery-path-clear" aria-label="Remove saved folder"><i class="material-icons">close</i></button>
+                    <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;">
+                        <span id="gallery-path-toggle" class="gallery-path-toggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" onclick="galleryTogglePathMenu(event)">
+                            <i class="material-icons">history</i>
+                            <span id="gallery-path-text" class="gallery-path-text"></span>
+                            <i class="material-icons gallery-path-caret">expand_more</i>
+                        </span>
+                        <button type="button" class="gallery-path-refresh-btn" onclick="galleryRefreshFromPath(null, event)" data-i18n-title="gallery-path-refresh" aria-label="Refresh saved folder"><i class="material-icons">refresh</i></button>
+                        <button type="button" class="gallery-path-clear-btn" onclick="galleryClearSavedPath(event)" data-i18n-title="gallery-clear-all" aria-label="Clear all saved folders"><i class="material-icons">delete_sweep</i></button>
+                        <div id="gallery-path-menu" class="gallery-path-menu" role="menu" style="display:none;"></div>
                     </div>
                     <div id="gallery-info" class="gallery-info"></div>
                     <div id="gallery-sections"></div>
@@ -2079,7 +2083,7 @@ function getElementClasses(element) {
     <script src="js/core/svg/google-icon-names.js?v=7.2"></script>
     <script src="js/core/svg/google-icon-helper.js?v=7.2"></script>
     <script src="js/ui/bottom-bar.js?v=7.2" defer></script>
-    <script src="js/ui/gallery.js?v=7.4" defer></script>
+    <script src="js/ui/gallery.js?v=7.6" defer></script>
 
     <script src="js/ai/prompt/auto/prompt-map.js?v=7.2" defer></script>
     <script src="js/ai/prompt/auto/story-prompt-map.js?v=7.2" defer></script>

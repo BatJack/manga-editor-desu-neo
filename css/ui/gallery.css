@@ -27,7 +27,7 @@
     color: var(--text-1);
     cursor: pointer;
     font-size: 12px;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
 }
 
 #gallery-open-folder-btn:hover {
@@ -52,7 +52,7 @@
     color: var(--text-2);
     cursor: pointer;
     font-size: 11px;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -93,30 +93,40 @@
 }
 
 .gallery-path-bar {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
     margin: 4px 8px 0;
-    padding: 6px 10px;
+    padding: 4px 6px 4px 10px;
     border: 1px dashed var(--border-default);
     border-radius: var(--radius-lg);
     background: var(--bg-2);
     color: var(--text-2);
     font-size: 11px;
-    cursor: pointer;
-    user-select: none;
     flex-shrink: 0;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
 }
 
-.gallery-path-bar:hover {
-    background: var(--hover-strong);
-    border-color: var(--color-accent, var(--accent));
+.gallery-path-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    padding: 2px 4px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: color var(--dur-2) var(--ease);
+}
+
+.gallery-path-toggle:hover {
     color: var(--text-1);
 }
 
-.gallery-path-bar:focus-visible {
-    outline: 2px solid var(--color-accent, var(--accent));
+.gallery-path-toggle:focus-visible {
+    outline: var(--focus-ring);
     outline-offset: 1px;
 }
 
@@ -134,11 +144,106 @@
     font-weight: 600;
 }
 
-.gallery-path-refresh-icon {
+.gallery-path-caret {
     opacity: 0.7;
+    transition: transform var(--dur-2) var(--ease);
 }
 
+.gallery-path-toggle[aria-expanded="true"] .gallery-path-caret {
+    transform: rotate(180deg);
+}
+
+.gallery-path-refresh-btn,
 .gallery-path-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    line-height: 1;
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+}
+
+.gallery-path-refresh-btn:hover {
+    color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.gallery-path-clear-btn:hover {
+    color: var(--danger);
+    background: var(--btn-danger-hover-bg);
+}
+
+.gallery-path-refresh-btn i,
+.gallery-path-clear-btn i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ---- saved-path dropdown ---- */
+.gallery-path-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: var(--space-1);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-default);
+    border-top: 2px solid var(--accent);
+    border-radius: var(--radius-md);
+    box-shadow: var(--elev-2);
+    animation: caldera-pop var(--dur-2) var(--ease);
+}
+
+.gallery-path-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px 5px 8px;
+    border-radius: var(--radius-sm);
+    color: var(--text-1);
+    cursor: pointer;
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.gallery-path-item:hover,
+.gallery-path-item:focus-visible {
+    background: var(--hover-strong);
+    color: var(--text-0);
+}
+
+.gallery-path-item:focus-visible {
+    outline: none;
+}
+
+.gallery-path-item.active {
+    background: var(--accent-dim);
+    color: var(--text-0);
+}
+
+.gallery-path-item i {
+    font-size: 15px;
+}
+
+.gallery-path-item-name {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gallery-path-item-remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -147,20 +252,41 @@
     background: transparent;
     color: var(--text-2);
     cursor: pointer;
-    flex-shrink: 0;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     line-height: 1;
-    transition: background 0.2s, color 0.2s;
+    opacity: 0;
+    transition: opacity var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
 }
 
-.gallery-path-clear-btn:hover {
+.gallery-path-item:hover .gallery-path-item-remove,
+.gallery-path-item:focus-within .gallery-path-item-remove,
+.gallery-path-item.active .gallery-path-item-remove {
+    opacity: 1;
+}
+
+.gallery-path-item-remove:hover {
     color: var(--danger);
-    background: rgba(244, 67, 54, 0.12);
+    background: var(--btn-danger-hover-bg);
 }
 
-.gallery-path-clear-btn i {
-    font-size: 16px;
-    flex-shrink: 0;
+.gallery-path-item-remove i {
+    font-size: 14px;
+}
+
+.gallery-path-menu-sep {
+    height: 1px;
+    margin: var(--space-1) 6px;
+    background: var(--border-subtle);
+}
+
+.gallery-path-item-danger {
+    justify-content: center;
+    color: var(--text-2);
+}
+
+.gallery-path-item-danger:hover {
+    color: var(--danger);
+    background: var(--btn-danger-hover-bg);
 }
 
 #gallery-sections {
@@ -184,7 +310,7 @@
     border-bottom: 1px solid var(--border-subtle);
     cursor: pointer;
     user-select: none;
-    transition: background 0.15s;
+    transition: background var(--dur-1) var(--ease);
 }
 
 .gallery-section-header:hover {
@@ -195,7 +321,7 @@
     font-size: 9px;
     margin-right: 2px;
     color: var(--text-2);
-    transition: transform 0.2s;
+    transition: transform var(--dur-2) var(--ease);
     flex-shrink: 0;
 }
 
@@ -251,12 +377,12 @@
     flex-shrink: 0;
     border-radius: var(--radius-md);
     line-height: 1;
-    transition: background 0.2s, color 0.2s;
+    transition: background var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
 }
 
 .gallery-section-remove:hover {
     color: var(--danger);
-    background: rgba(244, 67, 54, 0.12);
+    background: var(--btn-danger-hover-bg);
 }
 
 .gallery-section-remove i {
@@ -286,7 +412,7 @@
     background: var(--bg-2);
     border: 1px solid var(--border-default);
     box-shadow: var(--elev-1);
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
 }
 
 .gallery-item:hover {

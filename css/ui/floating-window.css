@@ -1,6 +1,8 @@
 .flow-floating-window {
   position: absolute;
-  background-color: var(--background-color-A);
+  background-color: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: var(--border-color-1px-solid-B);
   border-radius: var(--fjm-border-radius);
   z-index: var(--fjm-z-index);
@@ -10,6 +12,8 @@
   font-family: var(--fjm-font-family);
   resize: both;
   overflow: hidden;
+  box-shadow: var(--glass-hl), var(--elev-3);
+  animation: caldera-pop var(--dur-2) var(--ease-spring);
 }
 
 .flow-window-header {

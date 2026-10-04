@@ -12,6 +12,8 @@ var galleryState = {
     sectionOrder: [],    // [sectionId, ...] DOM render order (flat)
     entryMap: {},        // entryId -> { name, entryId, file, objectUrl, sectionId, itemEl }
     activeRootId: null,  // most recently opened / refreshed folder
+    savedPaths: [],      // remembered folder names, most-recent first
+    activePath: '',      // path currently shown in the path bar
     watchedRootId: null, // the single folder currently watched (null when off)
     dirHandle: null,     // FileSystemDirectoryHandle (watch mode)
     watchTimer: null,
@@ -191,39 +193,63 @@ function galleryClearAll() {
     galleryUpdateInfo();
 }
 
-// ── last opened path persistence ───────────────────────────
+// ── saved paths persistence ────────────────────────────────
 
-var GALLERY_LAST_PATH_KEY = 'galleryLastPath';
+var GALLERY_PATHS_KEY = 'galleryPaths';
+var GALLERY_LAST_PATH_KEY = 'galleryLastPath'; // legacy single-path key, migrated on read
 
-function galleryGetLastPath() {
+// Remembered folder list, most-recent first. Migrates the legacy single-path value.
+function galleryGetSavedPaths() {
+    var paths = [];
     try {
-        return localStorage.getItem(GALLERY_LAST_PATH_KEY) || '';
+        var raw = localStorage.getItem(GALLERY_PATHS_KEY);
+        var parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed)) paths = parsed;
     } catch (err) {
-        galleryLogger.warn('Failed to read last gallery path: ' + err);
-        return '';
+        galleryLogger.warn('Failed to read saved gallery paths: ' + err);
+    }
+    try {
+        var legacy = localStorage.getItem(GALLERY_LAST_PATH_KEY);
+        if (legacy && paths.indexOf(legacy) === -1) paths.unshift(legacy);
+    } catch (err) {
+        galleryLogger.warn('Failed to read legacy gallery path: ' + err);
+    }
+    return paths.filter(function (p) { return typeof p === 'string' && p; });
+}
+
+function gallerySetSavedPaths(paths) {
+    galleryState.savedPaths = paths;
+    try {
+        localStorage.setItem(GALLERY_PATHS_KEY, JSON.stringify(paths));
+    } catch (err) {
+        galleryLogger.warn('Failed to save gallery paths: ' + err);
     }
 }
 
-function gallerySaveLastPath(path) {
+// New folders go to the top; already-remembered ones keep their position.
+function galleryAddSavedPath(path) {
     if (!path) return;
-    try {
-        localStorage.setItem(GALLERY_LAST_PATH_KEY, path);
-    } catch (err) {
-        galleryLogger.warn('Failed to save last gallery path: ' + err);
-    }
-    galleryUpdatePathBar(path);
+    var paths = (galleryState.savedPaths || []).slice();
+    if (paths.indexOf(path) === -1) paths.unshift(path);
+    gallerySetSavedPaths(paths);
+    galleryState.activePath = path;
+    galleryUpdatePathBar();
 }
 
-function galleryUpdatePathBar(path) {
+function galleryUpdatePathBar() {
     var bar = document.getElementById('gallery-path-bar');
     var text = document.getElementById('gallery-path-text');
     if (!bar || !text) return;
-    if (path) {
-        text.textContent = path;
-        bar.style.display = 'flex';
-    } else {
+    var paths = galleryState.savedPaths || [];
+    if (!paths.length) {
         bar.style.display = 'none';
+        galleryClosePathMenu();
+        return;
     }
+    if (paths.indexOf(galleryState.activePath) === -1) galleryState.activePath = paths[0];
+    text.textContent = galleryState.activePath;
+    bar.style.display = 'flex';
+    galleryRenderPathMenu();
 }
 
 function galleryDirStorage() {
@@ -234,33 +260,162 @@ function galleryDirStorage() {
     return galleryState.dirStorage;
 }
 
+function galleryDirHandleKey(path) {
+    return 'handle::' + path;
+}
+
 function galleryPersistDirHandle(handle) {
     var storage = galleryDirStorage();
-    if (!storage) return;
-    storage.setItem('dirHandle', handle).catch(function (err) {
+    if (!storage || !handle || !handle.name) return;
+    storage.setItem(galleryDirHandleKey(handle.name), handle).catch(function (err) {
         galleryLogger.warn('Failed to persist directory handle: ' + err);
     });
 }
 
-// Remove only the persisted saved-path record — loaded images and watch mode stay untouched
+function galleryRemoveDirHandle(path) {
+    var storage = galleryDirStorage();
+    if (!storage) return;
+    storage.removeItem(galleryDirHandleKey(path)).catch(function (err) {
+        galleryLogger.warn('Failed to remove persisted directory handle: ' + err);
+    });
+}
+
+// Forget one saved folder — loaded images and watch mode stay untouched
+function galleryRemoveSavedPath(path, e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    var paths = (galleryState.savedPaths || []).filter(function (p) { return p !== path; });
+    gallerySetSavedPaths(paths);
+    galleryRemoveDirHandle(path);
+    try {
+        localStorage.removeItem(GALLERY_LAST_PATH_KEY);
+    } catch (err) {
+        galleryLogger.warn('Failed to remove legacy gallery path: ' + err);
+    }
+    if (galleryState.activePath === path) galleryState.activePath = paths.length ? paths[0] : '';
+    galleryUpdatePathBar();
+    galleryLogger.info('Gallery saved path removed: ' + path);
+}
+
+// Forget every saved folder — loaded images and watch mode stay untouched
 function galleryClearSavedPath(e) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
+    (galleryState.savedPaths || []).forEach(function (p) { galleryRemoveDirHandle(p); });
+    gallerySetSavedPaths([]);
     try {
         localStorage.removeItem(GALLERY_LAST_PATH_KEY);
     } catch (err) {
-        galleryLogger.warn('Failed to remove last gallery path: ' + err);
+        galleryLogger.warn('Failed to remove legacy gallery path: ' + err);
     }
-    var storage = galleryDirStorage();
-    if (storage) {
-        storage.removeItem('dirHandle').catch(function (err) {
-            galleryLogger.warn('Failed to remove persisted directory handle: ' + err);
+    galleryState.activePath = '';
+    galleryUpdatePathBar();
+    galleryLogger.info('Gallery saved paths cleared');
+}
+
+// ── saved-path dropdown ────────────────────────────────────
+
+function galleryRenderPathMenu() {
+    var menu = document.getElementById('gallery-path-menu');
+    if (!menu) return;
+    menu.innerHTML = '';
+    var paths = galleryState.savedPaths || [];
+    paths.forEach(function (path) {
+        var item = document.createElement('div');
+        item.className = 'gallery-path-item';
+        if (path === galleryState.activePath) item.classList.add('active');
+        item.setAttribute('role', 'menuitem');
+        item.setAttribute('tabindex', '0');
+        item.title = path;
+
+        var icon = document.createElement('i');
+        icon.className = 'material-icons';
+        icon.textContent = 'folder';
+
+        var name = document.createElement('span');
+        name.className = 'gallery-path-item-name';
+        name.textContent = path;
+
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'gallery-path-item-remove';
+        removeBtn.setAttribute('data-i18n-title', 'gallery-remove-folder');
+        removeBtn.setAttribute('aria-label', getText('gallery-remove-folder'));
+        removeBtn.title = getText('gallery-remove-folder');
+        var removeIcon = document.createElement('i');
+        removeIcon.className = 'material-icons';
+        removeIcon.textContent = 'close';
+        removeBtn.appendChild(removeIcon);
+
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(removeBtn);
+
+        item.addEventListener('click', function (ev) {
+            if (ev.target.closest('.gallery-path-item-remove')) return;
+            galleryRefreshFromPath(path, ev);
         });
+        item.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                galleryRefreshFromPath(path, ev);
+            }
+        });
+        removeBtn.addEventListener('click', function (ev) {
+            galleryRemoveSavedPath(path, ev);
+        });
+
+        menu.appendChild(item);
+    });
+
+    if (paths.length > 1) {
+        var sep = document.createElement('div');
+        sep.className = 'gallery-path-menu-sep';
+        var clearAll = document.createElement('div');
+        clearAll.className = 'gallery-path-item gallery-path-item-danger';
+        clearAll.setAttribute('role', 'menuitem');
+        clearAll.setAttribute('tabindex', '0');
+        clearAll.textContent = getText('gallery-clear-all');
+        clearAll.addEventListener('click', function (ev) { galleryClearSavedPath(ev); });
+        clearAll.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                galleryClearSavedPath(ev);
+            }
+        });
+        menu.appendChild(sep);
+        menu.appendChild(clearAll);
     }
-    galleryUpdatePathBar('');
-    galleryLogger.info('Gallery saved path cleared');
+}
+
+function galleryTogglePathMenu(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    var menu = document.getElementById('gallery-path-menu');
+    if (!menu) return;
+    var willOpen = menu.style.display !== 'block';
+    if (willOpen) galleryRenderPathMenu();
+    menu.style.display = willOpen ? 'block' : 'none';
+    var toggle = document.getElementById('gallery-path-toggle');
+    if (toggle) toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+
+function galleryClosePathMenu() {
+    var menu = document.getElementById('gallery-path-menu');
+    if (menu) menu.style.display = 'none';
+    var toggle = document.getElementById('gallery-path-toggle');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
+
+function galleryOnDocumentClick(e) {
+    var bar = document.getElementById('gallery-path-bar');
+    if (bar && !bar.contains(e.target)) galleryClosePathMenu();
 }
 
 // ── info line ──────────────────────────────────────────────
@@ -644,6 +799,7 @@ function galleryToggleWatch() {
         btn.textContent = 'Watching';
         btn.classList.add('active');
         galleryPersistDirHandle(handle);
+        galleryAddSavedPath(rootId);
         galleryLogger.info('Gallery watch started for: ' + rootId);
 
         if (galleryState.roots[rootId]) {
@@ -729,17 +885,24 @@ function galleryWatchPoll() {
 
 // ── refresh from remembered path ────────────────────────────
 
-function galleryRefreshFromPath() {
-    var lastPath = galleryGetLastPath();
-    if (!lastPath) {
+function galleryRefreshFromPath(targetPath, e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    var path = (typeof targetPath === 'string' && targetPath) ? targetPath : galleryState.activePath;
+    if (!path) {
         openGalleryFolder();
         return;
     }
-    galleryLogger.info('Gallery refresh requested for: ' + lastPath);
+    galleryState.activePath = path;
+    galleryClosePathMenu();
+    galleryUpdatePathBar();
+    galleryLogger.info('Gallery refresh requested for: ' + path);
 
-    galleryFindUsableHandle(lastPath).then(function (handle) {
+    galleryFindUsableHandle(path).then(function (handle) {
         if (handle) {
-            galleryReadFromHandle(handle, lastPath);
+            galleryReadFromHandle(handle, path);
         } else {
             openGalleryFolder();
         }
@@ -756,7 +919,7 @@ function galleryFindUsableHandle(lastPath) {
     var storage = galleryDirStorage();
     if (!storage) return Promise.resolve(null);
 
-    return storage.getItem('dirHandle').then(function (handle) {
+    return storage.getItem(galleryDirHandleKey(lastPath)).then(function (handle) {
         if (!handle || handle.name !== lastPath) return null;
         if (!handle.queryPermission || !handle.requestPermission) return null;
         return handle.queryPermission({ mode: 'read' }).then(function (perm) {
@@ -836,7 +999,7 @@ function galleryReadFromHandle(handle, rootName) {
             return;
         }
         galleryLoadFolder(rootName, imageFiles, infoEl);
-        gallerySaveLastPath(rootName);
+        galleryAddSavedPath(rootName);
     }).catch(function (err) {
         galleryLogger.warn('Directory read failed, opening folder picker: ' + err);
         openGalleryFolder();
@@ -851,20 +1014,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     galleryState.entryMap = galleryNewEntryMap();
 
-    // Restore last opened path label from previous session
-    var savedPath = galleryGetLastPath();
-    if (savedPath) galleryUpdatePathBar(savedPath);
+    // Restore remembered folder list from previous session
+    gallerySetSavedPaths(galleryGetSavedPaths());
+    if (galleryState.savedPaths.length) galleryState.activePath = galleryState.savedPaths[0];
+    galleryUpdatePathBar();
 
-    var pathBar = document.getElementById('gallery-path-bar');
-    if (pathBar) {
-        pathBar.addEventListener('keydown', function (e) {
-            if (e.target !== pathBar) return;
+    var pathToggle = document.getElementById('gallery-path-toggle');
+    if (pathToggle) {
+        pathToggle.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                galleryRefreshFromPath();
+                galleryTogglePathMenu(e);
             }
         });
     }
+    document.addEventListener('click', galleryOnDocumentClick);
 
     // Every selection is added as its own folder section. Selecting a folder that is
     // already loaded refreshes it in place instead of duplicating it.
@@ -887,14 +1051,34 @@ document.addEventListener('DOMContentLoaded', function () {
         var rootId = galleryRootIdFromFiles(imageFiles);
         galleryLogger.info('Gallery folder selected: ' + rootId + ' (' + imageFiles.length + ' images)');
         galleryLoadFolder(rootId, imageFiles, infoEl);
-        gallerySaveLastPath(rootId);
+        galleryAddSavedPath(rootId);
     });
 });
 
+// Prefer the File System Access API: it hands back a persistable directory
+// handle, which is what lets a saved path reopen its own folder later without
+// the OS dialog falling back to the last-used location.
 function openGalleryFolder() {
+    if (typeof showDirectoryPicker === 'function') {
+        showDirectoryPicker({ mode: 'read' }).then(function (handle) {
+            var rootId = handle.name || 'folder';
+            // Keep watch mode's handle intact; the fast-path cache only applies otherwise
+            if (!galleryState.watchActive) galleryState.dirHandle = handle;
+            galleryPersistDirHandle(handle);
+            galleryLogger.info('Folder picked via File System Access: ' + rootId);
+            galleryReadFromHandle(handle, rootId);
+        }).catch(function (err) {
+            // User cancelled, or the API was blocked — never chain a second dialog
+            galleryLogger.warn('Folder picker cancelled or failed: ' + err);
+        });
+        return;
+    }
+
+    // Fallback: browsers without showDirectoryPicker cannot produce a reopenable
+    // handle, so this path is remembered by name only.
     var input = document.getElementById('folderInput');
     if (input) {
-        galleryLogger.info('Opening folder picker');
+        galleryLogger.info('Opening folder picker (input fallback)');
         input.value = '';
         input.click();
     }
