@@ -62,6 +62,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         except OSError as err:
             self._send_error_json(404, str(err))
 
+    def _serve_roots(self):
+        # Entry point for the folder picker. Returns drive letters only - no
+        # file contents - behind the same gate as every other endpoint.
+        self._send_json(200, {'roots': gallery_fs_api.list_roots()})
+
     def _serve_image(self, query):
         raw = query.get('path')
         name = query.get('name')
@@ -104,6 +109,8 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         query = gallery_fs_api.parse_query(self.path)
         if endpoint == 'list':
             self._serve_list(query)
+        elif endpoint == 'roots':
+            self._serve_roots()
         elif endpoint == 'image':
             self._serve_image(query)
         else:

@@ -147,5 +147,30 @@ class TestParseQuery(unittest.TestCase):
         self.assertNotIn('path', gallery_fs_api.parse_query('/api/fs/list'))
 
 
+class TestListRoots(unittest.TestCase):
+    def test_every_root_has_name_and_path(self):
+        roots = gallery_fs_api.list_roots()
+        self.assertTrue(roots, 'no roots discovered')
+        for root in roots:
+            self.assertIn('name', root)
+            self.assertIn('path', root)
+            self.assertTrue(root['name'])
+            self.assertTrue(root['path'])
+
+    @unittest.skipIf(os.name != 'nt', 'Windows drive letters')
+    def test_windows_roots_are_drive_letters(self):
+        for root in gallery_fs_api.list_roots():
+            self.assertRegex(root['path'], r'^[A-Z]:\\$')
+
+    @unittest.skipIf(os.name == 'nt', 'POSIX filesystem')
+    def test_posix_roots_include_filesystem_root(self):
+        paths = [r['path'] for r in gallery_fs_api.list_roots()]
+        self.assertIn('/', paths)
+
+    def test_roots_are_existing_directories(self):
+        for root in gallery_fs_api.list_roots():
+            self.assertTrue(os.path.isdir(root['path']), root['path'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -20,7 +20,8 @@ var galleryState = {
     watchActive: false,
     sourceMode: 'input',  // 'handle' | 'server' | 'input'
     serverToken: null,     // token handed out by the local Python bridge
-    pickerPath: ''         // absolute path currently listed in the folder picker
+    pickerPath: '',        // absolute path currently listed in the folder picker
+    pickerRoots: []     // drive/root entries from the bridge (picker entry point)
 };
 
 // ── server bridge (local Python API) ─────────────────────────
@@ -74,6 +75,13 @@ function galleryServerReadImage(absPath, name) {
     return galleryServerRequest('image', { path: absPath, name: name }).then(function (res) { return res.blob(); });
 }
 
+// Drives/filesystem roots the bridge reports. The folder picker needs an entry
+// point, and the native directory dialog is unavailable in Brave.
+function galleryServerRoots() {
+    return galleryServerRequest('roots').then(function (res) { return res.json(); })
+    .then(function (data) { return data.roots || []; });
+}
+
 // Resolves true only when the bridge answered with a usable token.
 function galleryProbeServerBridge() {
     return fetch(GALLERY_API_BASE + 'session', { cache: 'no-store' }).then(function (res) {
@@ -106,51 +114,64 @@ function gallerySelectSourceMode() {
 // ── server-mode folder picker ───────────────────────────────
 
 // Brave has no native directory dialog, so server mode lists directories over
-// the bridge. The picker starts at the parent of the folder the user last used,
-// so "up" can never walk out of the chosen subtree.
+// the bridge. The picker opens on the drive roots, or one level above the
+// folder already in use, and "up" is bounded by the drive.
+
+// The drive (Windows) or filesystem (POSIX) a path lives on, always with a
+// trailing separator so it can be compared and navigated to.
+function galleryPickerRootOf(absPath) {
+    if (!absPath) return '';
+    var text = String(absPath);
+    var drive = /^([a-z]):/i.exec(text);
+    if (drive) return drive[1].toUpperCase() + ':\\';
+    if (text.charAt(0) === '/') return '/';
+    if (text.charAt(0) === '\\' && text.charAt(1) === '\\') return '\\\\';
+    return '';
+}
 
 function galleryPickerParentOf(absPath) {
     if (!absPath) return '';
     var normalized = String(absPath).replace(/[\\/]+$/, '');
     var idx = Math.max(normalized.lastIndexOf('/'), normalized.lastIndexOf('\\'));
-    if (idx <= 0) return '';
-    return normalized.substring(0, idx);
+    if (idx < 0) return '';
+    // "/home" and "\Users" sit directly under the separator, which is itself a
+    // real, navigable parent - without this they would look like a root.
+    if (idx === 0) return normalized.charAt(0);
+    var parent = normalized.substring(0, idx);
+    // "C:\Users" must yield "C:", and the bridge rejects a bare drive letter
+    // because os.path.isabs("C:") is False on Windows - it means "the current
+    // directory on C:", not "the C: drive". Put the separator back.
+    if (/^[a-z]:$/i.test(parent)) return parent + '\\';
+    return parent;
 }
 
-// True only when the parent of currentPath lies strictly inside startPath.
-function galleryPickerShouldShowUp(currentPath, startPath) {
-    if (!currentPath || !startPath) return false;
-    var parent = galleryPickerParentOf(currentPath);
-    if (!parent) return false;
-    var start = String(startPath).replace(/[\\/]+$/, '');
-    return parent === start || parent.indexOf(start + '/') === 0 || parent.indexOf(start + '\\') === 0;
+// Up is bounded by the drive/root, so the picker reaches a drive letter and
+// stops there - the behaviour every file browser has.
+function galleryPickerShouldShowUp(currentPath) {
+    if (!currentPath) return false;
+    return galleryPickerParentOf(currentPath) !== '';
 }
 
 function galleryCloseFolderPicker() {
     var panel = document.getElementById('gallery-fs-picker');
     if (panel) panel.style.display = 'none';
-    galleryState.pickerStart = '';
 }
 
 function galleryOpenFolderPicker() {
     var panel = document.getElementById('gallery-fs-picker');
     if (!panel) return;
-    // Start one level above the active folder so the user can still go up.
+    panel.style.display = 'flex';
+    // Resume one level above the folder already open, else show the roots so
+    // there is somewhere to start from.
     var start = galleryState.activePath && galleryState.sourceMode === 'server'
         ? galleryPickerParentOf(galleryState.activePath)
         : '';
-    galleryState.pickerStart = start;
-    panel.style.display = 'flex';
-    if (start) {
-        galleryFolderPickerRender(start);
-    } else {
-        galleryFolderPickerRender('');
-    }
+    galleryFolderPickerRender(start);
 }
 
 function galleryFolderPickerGoUp() {
-    if (!galleryPickerShouldShowUp(galleryState.pickerPath, galleryState.pickerStart)) {
-        galleryLogger.info('Gallery picker: refusing to leave the start directory');
+    if (!galleryPickerShouldShowUp(galleryState.pickerPath)) {
+        galleryLogger.info('Gallery picker: already at the drive root');
         return;
     }
     galleryFolderPickerRender(galleryPickerParentOf(galleryState.pickerPath));
@@ -166,7 +187,7 @@ function galleryFolderPickerRender(absPath) {
     if (!listEl) return;
 
     if (pathEl) pathEl.textContent = absPath || getText('gallery-picker-roots');
-    if (upBtn) upBtn.style.display = galleryPickerShouldShowUp(absPath, galleryState.pickerStart) ? 'inline-flex' : 'none';
+    if (upBtn) upBtn.style.display = galleryPickerShouldShowUp(absPath) ? 'inline-flex' : 'none';
     if (confirmBtn) confirmBtn.style.display = absPath ? 'inline-flex' : 'none';
 
     listEl.innerHTML = '';
@@ -199,17 +220,24 @@ function galleryFolderPickerRender(absPath) {
     };
 
     if (!absPath) {
-        render(galleryState.pickerRoots || []);
+        // Entry point: the drives/roots the bridge reports.
+        galleryServerRoots().then(function (roots) {
+            galleryState.pickerRoots = roots;
+            render(roots);
+        }).catch(function (err) {
+            galleryLogger.warn('Gallery picker root listing failed: ' + err);
+            render([]);
+        });
         return;
     }
 
     galleryServerList(absPath).then(function (data) {
         render(data.folders || []);
     }).catch(function (err) {
+        // The folder may have been deleted or renamed between clicks. Fall back
+        // to the roots rather than leaving a dead panel on screen.
         galleryLogger.warn('Gallery picker list failed for ' + absPath + ': ' + err);
-        galleryState.pickerStart = '';
-        var panel = document.getElementById('gallery-fs-picker');
-        if (panel) panel.style.display = 'none';
+        galleryFolderPickerRender('');
     });
 }
 

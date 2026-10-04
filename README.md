@@ -1,5 +1,4 @@
-[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md) |
-[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_EN.md)  
+[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md)
 
 
 # 漫画编辑器 Desu! 专业版
@@ -13,9 +12,6 @@
 - WebUI：SD1.5、SDXL、Pony
 - Forge：SD1.5、SDXL、Pony、Flux1
 *图像生成通过ComfyUI或A1111 WebUI或Forge API完成。
-
-仅使用演示网站即可使用所有功能。
-[网站：Desu!](https://new-sankaku.github.io/manga-editor-desu/)
 
 
 如果您想在本地下载文件（运行速度更快），请使用：
@@ -41,7 +37,7 @@ https://github.com/user-attachments/assets/6f1dae5f-b50f-4b04-8875-f0b07111f2ab
 <img src="https://new-sankaku.github.io/SP-MangaEditer-docs/03_prompthelper.webp" width="700">
 
 ## 支持语言
-<img src="https://new-sankaku.github.io/SP-MangaEditer-docs/02_trans.webp" height="400">
+中文 | 英语
 
 ## 网格线 / 刀具模式
 <div style="display: flex; align-items: flex-start;">
@@ -114,6 +110,6 @@ https://github.com/new-sankaku/manga-editor-desu.git
 - **文档改进**：如果文档中有拼写错误或错误，请提交带有可能更正的拉取请求。如有必要，您也可以将其添加到[Issues](https://github.com/new-sankaku/manga-editor-desu/issues)中。
 
 ## 交流
-如果您对项目有疑问或讨论，请在[Issues](https://github.com/new-sankaku/manga-editor-desu/issues)中发帖或加入[Discord](https://discord.gg/XCp7dyHj3N)服务器。
+如果您对项目有疑问或讨论，请在[Issues](https://github.com/new-sankaku/manga-editor-desu/issues)中发帖。
 
 谢谢！

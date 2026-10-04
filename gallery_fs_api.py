@@ -5,6 +5,7 @@ without opening a socket.
 """
 import os
 import secrets
+import string
 from urllib.parse import urlsplit, parse_qsl
 
 LOCAL_HOSTS = ('localhost', '127.0.0.1')
@@ -144,3 +145,30 @@ def find_image(scanned, name):
         if image['name'] == wanted:
             return image
     raise KeyError(wanted)
+
+
+# ── root discovery (folder picker entry point) ──────────────
+
+def list_roots():
+    """Return browsable roots so the picker has somewhere to start.
+
+    Entry shape matches scan_dir's folder entries, so the picker renders both
+    with the same code. isdir() rather than exists() keeps empty optical drives
+    and disconnected volumes out of the list.
+    """
+    roots = []
+    if os.name == 'nt':
+        for letter in string.ascii_uppercase:
+            drive = letter + ':\\'
+            try:
+                if os.path.isdir(drive):
+                    roots.append({'name': drive, 'path': drive})
+            except OSError:
+                continue
+    else:
+        if os.path.isdir('/'):
+            roots.append({'name': '/', 'path': '/'})
+        home = os.path.expanduser('~')
+        if home and os.path.isdir(home):
+            roots.append({'name': home, 'path': home})
+    return roots

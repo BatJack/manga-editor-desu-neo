@@ -400,12 +400,25 @@ console.warn('[Test Skip] gallery server source not loaded');
 return false;
 }
 
+// Up is bounded by the drive/root, not by wherever the picker happened to
+// start: with drive-bounded navigation the picker must reach a drive letter and
+// must never be able to walk above it.
 function testGalleryPickerModel(){
-if(typeof galleryPickerShouldShowUp!=='undefined'){
+if(typeof galleryPickerShouldShowUp!=='undefined'&&typeof galleryPickerRootOf!=='undefined'){
 TestRunner.reset();
-TestRunner.assert(galleryPickerShouldShowUp('D:\\a\\b','D:\\a'),'Up is offered below the start directory');
-TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','D:\\a'),'Up is hidden at the start directory');
-TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','C:\\other'),'Up is hidden when the parent is outside the start directory');
+TestRunner.assertEquals('C:\\',galleryPickerRootOf('C:\\Users\\Bob'),'Root of a nested Windows path');
+TestRunner.assertEquals('D:\\',galleryPickerRootOf('D:'),'A bare drive letter is normalised to a root');
+TestRunner.assertEquals('/',galleryPickerRootOf('/home/user'),'Root of a POSIX path');
+TestRunner.assertEquals('C:\\',galleryPickerParentOf('C:\\Users'),'Parent of C:\\Users is the drive root, not "C:"');
+TestRunner.assertEquals('D:\\',galleryPickerParentOf('D:\\art\\raw'),'Parent climbs one level and keeps the separator');
+TestRunner.assertEquals('',galleryPickerParentOf('C:\\'),'A drive root has no parent');
+TestRunner.assertEquals('',galleryPickerParentOf('/'),'The POSIX root has no parent');
+TestRunner.assertEquals('/',galleryPickerParentOf('/home'),'Parent of /home is /');
+TestRunner.assert(galleryPickerShouldShowUp('C:\\Users'),'Up is offered inside a drive');
+TestRunner.assert(galleryPickerShouldShowUp('C:\\Users\\Bob\\pics'),'Up is offered deep inside a drive');
+TestRunner.assert(!galleryPickerShouldShowUp('C:\\'),'Up is hidden at a drive root');
+TestRunner.assert(!galleryPickerShouldShowUp('/'),'Up is hidden at the POSIX root');
+TestRunner.assert(!galleryPickerShouldShowUp(''),'Up is hidden with no path');
 return TestRunner.printResults('Gallery Picker Model');
 }
 console.warn('[Test Skip] gallery folder picker not loaded');
