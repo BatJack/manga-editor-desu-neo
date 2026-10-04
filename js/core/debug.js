@@ -412,6 +412,22 @@ console.warn('[Test Skip] gallery folder picker not loaded');
 return false;
 }
 
+function testGalleryWatchDiff(){
+if(typeof galleryDiffImages!=='undefined'){
+TestRunner.reset();
+const before=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:1000,size:1}];
+const after=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:2000,size:9},{name:'c.png',mtime:3000,size:3}];
+const added=galleryDiffImages(before,after);
+TestRunner.assertEquals(1,added.filter(x=>x.name==='c.png').length,'New file detected');
+TestRunner.assertEquals(0,added.filter(x=>x.name==='a.png').length,'Unchanged file not re-added');
+TestRunner.assertEquals(1,added.filter(x=>x.name==='b.png').length,'Modified file treated as changed');
+TestRunner.assertEquals(3,galleryDiffImages([],after).length,'Empty baseline yields every image');
+return TestRunner.printResults('Gallery Watch Diff');
+}
+console.warn('[Test Skip] gallery watch diff not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -430,6 +446,7 @@ results.taskQueue=await testTaskQueue();
 results.galleryHandleStore=await testGalleryHandleStore();
 results.galleryServerPathKeys=testGalleryServerPathKeys();
 results.galleryPickerModel=testGalleryPickerModel();
+results.galleryWatchDiff=testGalleryWatchDiff();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

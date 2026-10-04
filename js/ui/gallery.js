@@ -220,19 +220,15 @@ function galleryFolderPickerConfirm() {
         var images = data.images || [];
         if (!images.length) {
             galleryLogger.warn('Gallery picker: no images in ' + absPath);
-            return;
+            return null;
         }
-        // Reuse the existing section/grouping code by handing it File-like
-        // objects that carry webkitRelativePath, exactly as the input and
-        // handle paths already do.
         var rootId = galleryServerLeafName(absPath);
-        var files = images.map(function (image) {
-            return galleryServerFileLike(absPath, rootId, image);
+        return galleryServerFiles(absPath, rootId, images).then(function (files) {
+            galleryCloseFolderPicker();
+            galleryLoadFolder(rootId, files, document.getElementById('gallery-info'));
+            galleryAddServerPath(absPath, rootId);
+            galleryUpdateWatchButton();
         });
-        galleryCloseFolderPicker();
-        galleryLoadFolder(rootId, files, document.getElementById('gallery-info'));
-        galleryAddServerPath(absPath, rootId);
-        galleryUpdateWatchButton();
     }).catch(function (err) {
         galleryLogger.warn('Gallery picker confirm failed for ' + absPath + ': ' + err);
     });
@@ -244,19 +240,33 @@ function galleryServerLeafName(absPath) {
     return idx >= 0 ? normalized.substring(idx + 1) : normalized;
 }
 
-function galleryServerFileLike(absPath, rootId, image) {
-    // The gallery only needs name/type/webkitRelativePath until the image is
-    // materialised, so a lightweight stand-in avoids reading every file up
-    // front. webkitRelativePath drives the existing section/grouping code.
-    return {
-        name: image.name,
-        size: image.size,
-        lastModified: image.mtime,
-        type: 'image/' + (image.name.split('.').pop() || 'png').toLowerCase(),
-        webkitRelativePath: rootId + '/' + image.name,
-        __galleryServerPath: absPath,
-        __galleryServerName: image.name
-    };
+// Server mode hands the gallery real File objects: the existing render path
+// calls URL.createObjectURL(entry.file), which rejects a plain object.
+function galleryServerFile(absPath, rootId, image) {
+    return galleryServerReadImage(absPath, image.name).then(function (blob) {
+        var ext = (image.name.split('.').pop() || 'png').toLowerCase();
+        var file = new File([blob], image.name, {
+            type: blob.type || 'image/' + ext,
+            lastModified: image.mtime
+        });
+        try {
+            Object.defineProperty(file, 'webkitRelativePath', {
+                value: rootId + '/' + image.name,
+                writable: true,
+                configurable: true
+            });
+        } catch (err) {
+            galleryLogger.warn('Failed to set relative path for ' + image.name + ': ' + err);
+        }
+        file.__galleryServerName = image.name;
+        return file;
+    });
+}
+
+function galleryServerFiles(absPath, rootId, images) {
+    return Promise.all(images.map(function (image) {
+        return galleryServerFile(absPath, rootId, image);
+    }));
 }
 
 function galleryAddServerPath(absPath, rootId) {
@@ -269,6 +279,100 @@ function galleryAddServerPath(absPath, rootId) {
         galleryLogger.warn('Failed to save server paths: ' + err);
     }
     galleryAddSavedPath(rootId);
+}
+
+// ── server-mode path memory and watch ───────────────────────
+
+// A file counts as new when it is absent, or present with a different mtime
+// (an overwrite in place). Keyed on name + mtime, never on list position.
+function galleryDiffImages(before, after) {
+    var known = {};
+    (before || []).forEach(function (image) {
+        known[image.name] = image.mtime;
+    });
+    return (after || []).filter(function (image) {
+        return known[image.name] !== image.mtime;
+    });
+}
+
+function galleryServerSavedPaths() {
+    try {
+        var raw = localStorage.getItem('galleryServerPaths');
+        var parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (err) {
+        galleryLogger.warn('Failed to read server paths: ' + err);
+        return {};
+    }
+}
+
+// Reopen every saved server folder on startup. A folder that has gone missing
+// stays in the list so the user can remove it, rather than trapping them.
+function galleryServerRestorePaths() {
+    var saved = galleryServerSavedPaths();
+    var keys = Object.keys(saved);
+    if (!keys.length) return Promise.resolve();
+    galleryState.serverPaths = saved;
+    return Promise.all(keys.map(function (key) {
+        var entry = saved[key];
+        if (!entry || !entry.path) return Promise.resolve();
+        return galleryServerList(entry.path)
+        .then(function (data) {
+            var images = data.images || [];
+            if (!images.length) return null;
+            return galleryServerFiles(entry.path, entry.rootId, images)
+            .then(function (files) {
+                galleryLoadFolder(entry.rootId, files, document.getElementById('gallery-info'));
+            });
+        }).catch(function (err) {
+            if (err && err.status === 403) {
+                // Token rotated (server restarted) - re-probe once, then stop.
+                galleryLogger.warn('Gallery bridge token rejected, re-probing');
+                galleryState.serverToken = null;
+                return galleryProbeServerBridge().then(function (ok) {
+                    if (ok) return galleryServerRestorePaths();
+                    galleryLogger.warn('Gallery bridge gone, skipping path restore');
+                });
+            }
+            // 400/404: folder missing or unreadable. Kept in the list on purpose.
+            galleryLogger.warn('Saved path unavailable, kept for manual removal: ' + entry.path);
+        });
+    }));
+}
+
+function galleryServerWatchPoll() {
+    var rootId = galleryState.watchedRootId;
+    if (!rootId || galleryState.sourceMode !== 'server') return Promise.resolve();
+    var saved = galleryState.serverPaths || {};
+    var entry = null;
+    for (var key in saved) {
+        if (saved[key] && saved[key].rootId === rootId) { entry = saved[key]; break; }
+    }
+    if (!entry) return Promise.resolve();
+
+    var section = galleryState.sections[gallerySectionId(rootId, '')];
+    var before = section ? section.files.map(function (file) {
+        return { name: file.__galleryServerName || file.name, mtime: file.lastModified };
+    }) : [];
+
+    return galleryServerList(entry.path).then(function (data) {
+        var added = galleryDiffImages(before, data.images || []);
+        if (!added.length) return;
+        galleryLogger.info('Server watch: ' + added.length + ' new file(s) in ' + rootId);
+        galleryAppendServerImages(rootId, entry, added);
+    }).catch(function (err) {
+        galleryLogger.warn('Server watch poll failed for ' + rootId + ': ' + err);
+    });
+}
+
+function galleryAppendServerImages(rootId, entry, images) {
+    return galleryServerFiles(entry.path, rootId, images).then(function (files) {
+        // Reuse the scoped refresh path so entry bookkeeping, counts and the
+        // info line all stay in one place.
+        galleryLoadFolder(rootId, files, document.getElementById('gallery-info'));
+    }).catch(function (err) {
+        galleryLogger.warn('Failed to add watched images to ' + rootId + ': ' + err);
+    });
 }
 // Entry keys always contain "::", so they can never collide with Object.prototype
 // members. entryMap still uses a null prototype so for-in iteration is exact.
@@ -1092,7 +1196,24 @@ function galleryLoadFolder(rootId, imageFiles, infoEl) {
     else galleryAddRoot(rootId, imageFiles, infoEl);
 }
 
-// ── watch mode (showDirectoryPicker) — one folder only ─────
+// ── watch mode — one folder only ────────────────────────────
+//
+// handle mode polls a FileSystemDirectoryHandle; server mode polls the bridge
+// for an already-loaded folder (no picker, so no second selection step).
+
+function galleryStartServerWatch(rootId) {
+    var btn = document.getElementById('gallery-watch-btn');
+    if (!btn) return;
+    galleryState.watchedRootId = rootId;
+    galleryState.watchActive = true;
+    gallerySetWatchLabel(true);
+    btn.classList.add('active');
+    galleryState.activeRootId = rootId;
+    galleryUpdateInfo();
+    if (galleryState.watchTimer) clearInterval(galleryState.watchTimer);
+    galleryState.watchTimer = setInterval(galleryServerWatchPoll, 4000);
+    galleryLogger.info('Gallery server watch started for: ' + rootId);
+}
 
 function galleryToggleWatch() {
     var btn = document.getElementById('gallery-watch-btn');
@@ -1100,6 +1221,26 @@ function galleryToggleWatch() {
 
     if (galleryState.watchActive) {
         galleryStopWatch();
+        return;
+    }
+
+    if (galleryState.sourceMode === 'server') {
+        // Watch what is already loaded; require a folder to be open first.
+        var rootId = galleryState.activeRootId;
+        if (!rootId || !galleryState.roots[rootId]) {
+            galleryLogger.warn('Open a folder before starting watch');
+            return;
+        }
+        var saved = galleryState.serverPaths || {};
+        var hasPath = false;
+        for (var key in saved) {
+            if (saved[key] && saved[key].rootId === rootId) { hasPath = true; break; }
+        }
+        if (!hasPath) {
+            galleryLogger.warn('No server path recorded for ' + rootId);
+            return;
+        }
+        galleryStartServerWatch(rootId);
         return;
     }
 
@@ -1336,8 +1477,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Pick the source before anything reads a folder: handle mode in
     // Chrome/Edge, server mode in Brave, input mode on file://.
-    gallerySelectSourceMode().then(function () {
+    gallerySelectSourceMode().then(function (mode) {
         galleryUpdateWatchButton();
+        if (mode === 'server') return galleryServerRestorePaths();
     });
 
     var pathToggle = document.getElementById('gallery-path-toggle');
