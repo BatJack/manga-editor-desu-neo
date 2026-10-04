@@ -1339,6 +1339,26 @@ function galleryToggleWatch() {
     });
 }
 
+// FileSystemDirectoryHandle.values() returns an AsyncIterableIterator, which
+// has next() but NO then(). Calling .then() on it throws
+// "handle.values(...).then is not a function". galleryWalkHandle already walks
+// it correctly; this helper is the same walk, shared by both callers.
+function galleryEachHandleEntry(handle, onEntry) {
+    var iterator;
+    try {
+        iterator = handle.values();
+    } catch (err) {
+        return Promise.reject(err);
+    }
+    function step() {
+        return iterator.next().then(function (result) {
+            if (result.done) return;
+            return onEntry(result.value).then(step);
+        });
+    }
+    return step();
+}
+
 // Polls only the watched folder's top level and writes only into that folder's sections.
 function galleryWatchPoll() {
     if (!galleryState.dirHandle || !galleryState.watchActive) return;
@@ -1353,46 +1373,35 @@ function galleryWatchPoll() {
     }
 
     var newFiles = [];
-    handle.values().then(function (iterator) {
-        function readNext() {
-            iterator.next().then(function (result) {
-                if (result.done) {
-                    if (newFiles.length > 0) {
-                        galleryLogger.info('Watch: ' + newFiles.length + ' new file(s) in ' + rootId);
-                        gallerySyncRoot(rootId, rootFiles.concat(newFiles), document.getElementById('gallery-info'));
-                    }
-                    return;
-                }
-                var entry = result.value;
-                if (entry.kind !== 'file' || !/\.(jpg|jpeg|png|gif|bmp|webp|avif|tiff?)$/i.test(entry.name)) {
-                    readNext();
-                    return;
-                }
-                if (known[gallerySectionId(rootId, '') + '::' + entry.name]) {
-                    readNext();
-                    return;
-                }
-                entry.getFile().then(function (file) {
-                    try {
-                        Object.defineProperty(file, 'webkitRelativePath', {
-                            value: rootId + '/' + entry.name,
-                            writable: true,
-                            configurable: true
-                        });
-                    } catch (err) {
-                        galleryLogger.warn('Failed to set relative path for ' + entry.name + ': ' + err);
-                    }
-                    newFiles.push(file);
-                    readNext();
-                }).catch(function (err) {
-                    galleryLogger.warn('Failed to read file "' + entry.name + '": ' + err);
-                    readNext();
-                });
-            }).catch(function (err) {
-                galleryLogger.warn('Watch iteration failed for ' + rootId + ': ' + err);
-            });
+    galleryEachHandleEntry(handle, function (entry) {
+        if (entry.kind !== 'file' || !/\.(jpg|jpeg|png|gif|bmp|webp|avif|tiff?)$/i.test(entry.name)) {
+            return Promise.resolve();
         }
-        readNext();
+        if (known[gallerySectionId(rootId, '') + '::' + entry.name]) {
+            return Promise.resolve();
+        }
+        return entry.getFile().then(function (file) {
+            try {
+                Object.defineProperty(file, 'webkitRelativePath', {
+                    value: rootId + '/' + entry.name,
+                    writable: true,
+                    configurable: true
+                });
+            } catch (err) {
+                galleryLogger.warn('Failed to set relative path for ' + entry.name + ': ' + err);
+            }
+            newFiles.push(file);
+        }).catch(function (err) {
+            // One unreadable file must not abort the whole poll.
+            galleryLogger.warn('Failed to read file "' + entry.name + '": ' + err);
+        });
+    }).then(function () {
+        if (newFiles.length > 0) {
+            galleryLogger.info('Watch: ' + newFiles.length + ' new file(s) in ' + rootId);
+            // gallerySyncRoot treats this as the complete set for the root, so
+            // the already-loaded files must be included or they get dropped.
+            gallerySyncRoot(rootId, rootFiles.concat(newFiles), document.getElementById('gallery-info'));
+        }
     }).catch(function (err) {
         galleryLogger.warn('Watch poll failed for ' + rootId + ': ' + err);
     });

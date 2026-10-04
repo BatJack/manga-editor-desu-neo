@@ -449,6 +449,40 @@ console.warn('[Test Skip] gallery watch file set not loaded');
 return false;
 }
 
+// FileSystemDirectoryHandle.values() returns an AsyncIterableIterator, not a
+// Promise - it has no .then(). galleryWalkHandle already iterates it correctly;
+// this pins the shape that actually threw in galleryWatchPoll.
+async function testGalleryHandleIteration(){
+if(typeof galleryEachHandleEntry!=='undefined'){
+const entries=[
+{kind:'file',name:'a.png',getFile:function(){return Promise.resolve({name:'a.png'});}},
+{kind:'directory',name:'sub',getFile:function(){return Promise.resolve({});}}
+];
+let i=0;
+// Shaped like a real one: has next(), deliberately has no then().
+const handle={values:function(){
+return {
+next:function(){return Promise.resolve(i<entries.length?{done:false,value:entries[i++]}:{done:true});}
+};
+}};
+TestRunner.reset();
+const seen=[];
+try{
+await galleryEachHandleEntry(handle,function(entry){seen.push(entry.name);return Promise.resolve();});
+TestRunner.assert(true,'galleryEachHandleEntry resolves without throwing');
+}catch(err){
+TestRunner.assert(false,'galleryEachHandleEntry resolves without throwing',err.name+': '+err.message);
+}
+TestRunner.assertEquals(2,seen.length,'Every entry visited');
+TestRunner.assertEquals('a.png',seen[0],'First entry seen');
+TestRunner.assertEquals('sub',seen[1],'Iterator yields directories too; filtering is the caller-s job');
+TestRunner.assertThrows(function(){handle.values().then(function(){});},'A raw values() result really does lack .then() (the original bug)');
+return TestRunner.printResults('Gallery Handle Iteration');
+}
+console.warn('[Test Skip] gallery handle iteration not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -469,6 +503,7 @@ results.galleryServerPathKeys=testGalleryServerPathKeys();
 results.galleryPickerModel=testGalleryPickerModel();
 results.galleryWatchDiff=testGalleryWatchDiff();
 results.galleryWatchFileSet=testGalleryWatchFileSet();
+results.galleryHandleIteration=await testGalleryHandleIteration();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');
