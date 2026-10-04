@@ -400,6 +400,18 @@ console.warn('[Test Skip] gallery server source not loaded');
 return false;
 }
 
+function testGalleryPickerModel(){
+if(typeof galleryPickerShouldShowUp!=='undefined'){
+TestRunner.reset();
+TestRunner.assert(galleryPickerShouldShowUp('D:\\a\\b','D:\\a'),'Up is offered below the start directory');
+TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','D:\\a'),'Up is hidden at the start directory');
+TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','C:\\other'),'Up is hidden when the parent is outside the start directory');
+return TestRunner.printResults('Gallery Picker Model');
+}
+console.warn('[Test Skip] gallery folder picker not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -417,6 +429,7 @@ results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
 results.galleryHandleStore=await testGalleryHandleStore();
 results.galleryServerPathKeys=testGalleryServerPathKeys();
+results.galleryPickerModel=testGalleryPickerModel();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

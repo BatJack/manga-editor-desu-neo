@@ -103,6 +103,173 @@ function gallerySelectSourceMode() {
     });
 }
 
+// ── server-mode folder picker ───────────────────────────────
+
+// Brave has no native directory dialog, so server mode lists directories over
+// the bridge. The picker starts at the parent of the folder the user last used,
+// so "up" can never walk out of the chosen subtree.
+
+function galleryPickerParentOf(absPath) {
+    if (!absPath) return '';
+    var normalized = String(absPath).replace(/[\\/]+$/, '');
+    var idx = Math.max(normalized.lastIndexOf('/'), normalized.lastIndexOf('\\'));
+    if (idx <= 0) return '';
+    return normalized.substring(0, idx);
+}
+
+// True only when the parent of currentPath lies strictly inside startPath.
+function galleryPickerShouldShowUp(currentPath, startPath) {
+    if (!currentPath || !startPath) return false;
+    var parent = galleryPickerParentOf(currentPath);
+    if (!parent) return false;
+    var start = String(startPath).replace(/[\\/]+$/, '');
+    return parent === start || parent.indexOf(start + '/') === 0 || parent.indexOf(start + '\\') === 0;
+}
+
+function galleryCloseFolderPicker() {
+    var panel = document.getElementById('gallery-fs-picker');
+    if (panel) panel.style.display = 'none';
+    galleryState.pickerStart = '';
+}
+
+function galleryOpenFolderPicker() {
+    var panel = document.getElementById('gallery-fs-picker');
+    if (!panel) return;
+    // Start one level above the active folder so the user can still go up.
+    var start = galleryState.activePath && galleryState.sourceMode === 'server'
+        ? galleryPickerParentOf(galleryState.activePath)
+        : '';
+    galleryState.pickerStart = start;
+    panel.style.display = 'flex';
+    if (start) {
+        galleryFolderPickerRender(start);
+    } else {
+        galleryFolderPickerRender('');
+    }
+}
+
+function galleryFolderPickerGoUp() {
+    if (!galleryPickerShouldShowUp(galleryState.pickerPath, galleryState.pickerStart)) {
+        galleryLogger.info('Gallery picker: refusing to leave the start directory');
+        return;
+    }
+    galleryFolderPickerRender(galleryPickerParentOf(galleryState.pickerPath));
+}
+
+// path === '' lists drives/roots the bridge reports as available entry points.
+function galleryFolderPickerRender(absPath) {
+    galleryState.pickerPath = absPath || '';
+    var pathEl = document.getElementById('gallery-fs-picker-path');
+    var listEl = document.getElementById('gallery-fs-picker-list');
+    var upBtn = document.getElementById('gallery-fs-picker-up');
+    var confirmBtn = document.getElementById('gallery-fs-picker-confirm');
+    if (!listEl) return;
+
+    if (pathEl) pathEl.textContent = absPath || getText('gallery-picker-roots');
+    if (upBtn) upBtn.style.display = galleryPickerShouldShowUp(absPath, galleryState.pickerStart) ? 'inline-flex' : 'none';
+    if (confirmBtn) confirmBtn.style.display = absPath ? 'inline-flex' : 'none';
+
+    listEl.innerHTML = '';
+
+    var render = function (folders) {
+        if (!folders.length) {
+            var empty = document.createElement('div');
+            empty.className = 'gallery-fs-picker-empty';
+            empty.textContent = getText('gallery-picker-empty');
+            listEl.appendChild(empty);
+            return;
+        }
+        folders.forEach(function (folder) {
+            var item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'gallery-fs-picker-item';
+            var icon = document.createElement('i');
+            icon.className = 'material-icons';
+            icon.textContent = 'folder';
+            var name = document.createElement('span');
+            // Folder names come from disk and may contain <, & or ".
+            name.textContent = folder.name;
+            item.appendChild(icon);
+            item.appendChild(name);
+            item.addEventListener('click', function () {
+                galleryFolderPickerRender(folder.path);
+            });
+            listEl.appendChild(item);
+        });
+    };
+
+    if (!absPath) {
+        render(galleryState.pickerRoots || []);
+        return;
+    }
+
+    galleryServerList(absPath).then(function (data) {
+        render(data.folders || []);
+    }).catch(function (err) {
+        galleryLogger.warn('Gallery picker list failed for ' + absPath + ': ' + err);
+        galleryState.pickerStart = '';
+        var panel = document.getElementById('gallery-fs-picker');
+        if (panel) panel.style.display = 'none';
+    });
+}
+
+function galleryFolderPickerConfirm() {
+    var absPath = galleryState.pickerPath;
+    if (!absPath) return;
+    galleryServerList(absPath).then(function (data) {
+        var images = data.images || [];
+        if (!images.length) {
+            galleryLogger.warn('Gallery picker: no images in ' + absPath);
+            return;
+        }
+        // Reuse the existing section/grouping code by handing it File-like
+        // objects that carry webkitRelativePath, exactly as the input and
+        // handle paths already do.
+        var rootId = galleryServerLeafName(absPath);
+        var files = images.map(function (image) {
+            return galleryServerFileLike(absPath, rootId, image);
+        });
+        galleryCloseFolderPicker();
+        galleryLoadFolder(rootId, files, document.getElementById('gallery-info'));
+        galleryAddServerPath(absPath, rootId);
+        galleryUpdateWatchButton();
+    }).catch(function (err) {
+        galleryLogger.warn('Gallery picker confirm failed for ' + absPath + ': ' + err);
+    });
+}
+
+function galleryServerLeafName(absPath) {
+    var normalized = String(absPath).replace(/[\\/]+$/, '');
+    var idx = Math.max(normalized.lastIndexOf('/'), normalized.lastIndexOf('\\'));
+    return idx >= 0 ? normalized.substring(idx + 1) : normalized;
+}
+
+function galleryServerFileLike(absPath, rootId, image) {
+    // The gallery only needs name/type/webkitRelativePath until the image is
+    // materialised, so a lightweight stand-in avoids reading every file up
+    // front. webkitRelativePath drives the existing section/grouping code.
+    return {
+        name: image.name,
+        size: image.size,
+        lastModified: image.mtime,
+        type: 'image/' + (image.name.split('.').pop() || 'png').toLowerCase(),
+        webkitRelativePath: rootId + '/' + image.name,
+        __galleryServerPath: absPath,
+        __galleryServerName: image.name
+    };
+}
+
+function galleryAddServerPath(absPath, rootId) {
+    var key = galleryServerPathKey(absPath);
+    galleryState.serverPaths = galleryState.serverPaths || {};
+    galleryState.serverPaths[key] = { path: absPath, rootId: rootId };
+    try {
+        localStorage.setItem('galleryServerPaths', JSON.stringify(galleryState.serverPaths));
+    } catch (err) {
+        galleryLogger.warn('Failed to save server paths: ' + err);
+    }
+    galleryAddSavedPath(rootId);
+}
 // Entry keys always contain "::", so they can never collide with Object.prototype
 // members. entryMap still uses a null prototype so for-in iteration is exact.
 function galleryNewEntryMap() {
