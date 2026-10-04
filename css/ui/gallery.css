@@ -95,6 +95,21 @@
 
 /* ---- server-mode folder picker (replaces the native directory dialog) ---- */
 
+/* Shown only in input mode: browsing works, path memory and watch do not. */
+.gallery-mode-notice {
+    margin: 8px 8px 0;
+    padding: 6px 8px;
+    border: 1px solid var(--border-default);
+    border-left: 3px solid var(--color-accent, var(--accent));
+    border-radius: var(--radius-lg);
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    flex-shrink: 0;
+}
+
 .gallery-fs-picker {
     display: flex;
     flex-direction: column;

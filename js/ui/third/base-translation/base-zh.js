@@ -35,6 +35,7 @@ const base_zh = {
 "gallery-picker-cancel":"取消",
 "gallery-picker-empty":"此文件夹下没有子文件夹",
 "gallery-picker-roots":"请选择要浏览的驱动器或文件夹",
+"gallery-mode-degraded":"当前仅可浏览。记忆文件夹与监控新图需要启动本地服务 —— 运行 <code>python 99_server.py</code> 后打开 <code>http://localhost:8000</code>。",
 "comfyUI_workflowErrorHelp":"请确认在Workflow's中设置的Workflow是否正常运行。在默认设置中，需要根据环境选择Model、VAE等。",
 "comfyUI_workflowHelp":"注意<br>・您可以为每种类型指定要使用的Workflow。如果想使用自己喜欢的Workflow，请从ComfyUI导出API用途并添加。</br>・当ComfyUI上线时，模型列表等将自动更新。一旦更新，ComfyUI的模型列表将存储在浏览器中。</br>・将seed和noise_seed设置为0时将随机化。</br>・在文本中指定以下内容将替换：</br>%prompt%</br>正面提示词</br>%negative%</br>负面提示词</br>",
 "comfyUI_addWorkflow":"添加API Workflow",

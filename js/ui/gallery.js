@@ -374,6 +374,19 @@ function galleryAppendServerImages(rootId, entry, images) {
         galleryLogger.warn('Failed to add watched images to ' + rootId + ': ' + err);
     });
 }
+// Shown only when the gallery fell back to the one-shot directory input.
+// Never hidden on an error path: a silent fallback is exactly what the
+// project's "no silent fallback" rule forbids.
+function galleryUpdateModeNotice() {
+var notice = document.getElementById('gallery-mode-notice');
+if (!notice) return;
+if (galleryState.sourceMode === 'input') {
+notice.style.display = 'block';
+} else {
+notice.style.display = 'none';
+}
+}
+
 // Entry keys always contain "::", so they can never collide with Object.prototype
 // members. entryMap still uses a null prototype so for-in iteration is exact.
 function galleryNewEntryMap() {
@@ -1479,6 +1492,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Chrome/Edge, server mode in Brave, input mode on file://.
     gallerySelectSourceMode().then(function (mode) {
         galleryUpdateWatchButton();
+        galleryUpdateModeNotice();
         if (mode === 'server') return galleryServerRestorePaths();
     });
 
