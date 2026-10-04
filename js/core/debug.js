@@ -359,6 +359,33 @@ TestRunner.assertEquals('#ff00ff',hex4.toLowerCase(),'Hex passthrough');
 return TestRunner.printResults('Color Conversion');
 }
 
+// Directory handles must survive persistence via structured clone. JSON-based
+// stores (localforage) reduce a FileSystemDirectoryHandle to {}, which silently
+// forces every saved path back through the OS picker at its last-used location.
+// Map is the deterministic stand-in: structured-clone keeps it, JSON erases it.
+async function testGalleryHandleStore(){
+if(typeof galleryHandleStoreSet!=='undefined'&&typeof indexedDB!=='undefined'){
+TestRunner.reset();
+const key='__test_handle__';
+try{
+await galleryHandleStoreDelete(key);
+const probe=new Map([['kind','probe'],['name','probeFolder']]);
+await galleryHandleStoreSet(key,probe);
+const back=await galleryHandleStoreGet(key);
+TestRunner.assert(back instanceof Map,'Handle store preserves a structured-clone value (JSON would erase it)');
+TestRunner.assertEquals('probeFolder',back instanceof Map?back.get('name'):null,'Handle store round-trips contents intact');
+await galleryHandleStoreDelete(key);
+const gone=await galleryHandleStoreGet(key);
+TestRunner.assert(gone===undefined||gone===null,'Handle store delete removes the entry');
+}catch(err){
+TestRunner.assert(false,'Handle store round-trip does not throw',err.name+': '+err.message);
+}
+return TestRunner.printResults('Gallery Handle Store');
+}
+console.warn('[Test Skip] gallery handle store or IndexedDB not available');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -374,6 +401,7 @@ colorConversion:testColorConversion()
 
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
+results.galleryHandleStore=await testGalleryHandleStore();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

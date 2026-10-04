@@ -28,6 +28,8 @@ const base_zh = {
 "gallery-path-clear":"删除保存的文件夹",
 "gallery-clear-all":"全部清除",
 "gallery-remove-folder":"删除此文件夹",
+"gallery-watch":"监视",
+"gallery-watching":"监视中",
 "comfyUI_workflowErrorHelp":"请确认在Workflow's中设置的Workflow是否正常运行。在默认设置中，需要根据环境选择Model、VAE等。",
 "comfyUI_workflowHelp":"注意<br>・您可以为每种类型指定要使用的Workflow。如果想使用自己喜欢的Workflow，请从ComfyUI导出API用途并添加。</br>・当ComfyUI上线时，模型列表等将自动更新。一旦更新，ComfyUI的模型列表将存储在浏览器中。</br>・将seed和noise_seed设置为0时将随机化。</br>・在文本中指定以下内容将替换：</br>%prompt%</br>正面提示词</br>%negative%</br>负面提示词</br>",
 "comfyUI_addWorkflow":"添加API Workflow",

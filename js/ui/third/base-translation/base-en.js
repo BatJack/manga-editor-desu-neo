@@ -28,6 +28,8 @@ const base_en = {
 "gallery-path-clear":"Remove saved folder",
 "gallery-clear-all":"Clear All",
 "gallery-remove-folder":"Remove this folder",
+"gallery-watch":"Watch",
+"gallery-watching":"Watching",
 "comfyUI_workflowErrorHelp":"Please verify that the Workflow configured in Workflow's is working properly. In the default settings, you need to select Model, VAE, etc. according to your environment.",
 "comfyUI_workflowHelp":"Notice<br>・You can specify which Workflow to use for each type. If you want to use your own preferred Workflow, please export it from ComfyUI for API use and add it.</br>・The model list and other items will be automatically updated when ComfyUI goes online. Once updated, ComfyUI's model list will be stored in the browser.</br>・Specifying 0 for seed and noise_seed will make them random.</br>・Specifying the following in the text will replace them:</br>%prompt%</br>Positive prompt</br>%negative%</br>Negative prompt</br>",
 "comfyUI_addWorkflow":"Add API Workflow",

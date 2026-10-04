@@ -1490,9 +1490,13 @@ function getElementClasses(element) {
                             <i class="material-icons">folder_open</i>
                             <span data-i18n="gallery-open-folder">フォルダを開く</span>
                         </button>
-                        <button id="gallery-watch-btn" onclick="galleryToggleWatch()">Watch</button>
-                        <button id="gallery-clear-all-btn" onclick="galleryClearAll()" data-i18n="gallery-clear-all" data-i18n-title="gallery-clear-all" aria-label="Clear all folders">
+                        <button id="gallery-watch-btn" onclick="galleryToggleWatch()" data-i18n-title="gallery-watch" aria-label="Watch folder for new images">
+                            <i class="material-icons">visibility</i>
+                            <span data-i18n="gallery-watch">監視</span>
+                        </button>
+                        <button id="gallery-clear-all-btn" onclick="galleryClearAll()" data-i18n-title="gallery-clear-all" aria-label="Clear all folders">
                             <i class="material-icons">delete_sweep</i>
+                            <span data-i18n="gallery-clear-all">全部清除</span>
                         </button>
                     </div>
                     <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;">

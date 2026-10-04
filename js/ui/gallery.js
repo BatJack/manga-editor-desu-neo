@@ -17,8 +17,7 @@ var galleryState = {
     watchedRootId: null, // the single folder currently watched (null when off)
     dirHandle: null,     // FileSystemDirectoryHandle (watch mode)
     watchTimer: null,
-    watchActive: false,
-    dirStorage: null     // localforage instance for persisting dirHandle
+    watchActive: false
 };
 
 // Entry keys always contain "::", so they can never collide with Object.prototype
@@ -84,6 +83,19 @@ function galleryRevokeAll() {
     }
 }
 
+// The Watch button holds an icon plus a localized label span. Assigning to
+// textContent would delete the icon, so only the label span is ever updated.
+function gallerySetWatchLabel(isWatching) {
+    var watchBtn = document.getElementById('gallery-watch-btn');
+    if (!watchBtn) return;
+    var label = watchBtn.querySelector('[data-i18n]');
+    if (!label) return;
+    var key = isWatching ? 'gallery-watching' : 'gallery-watch';
+    label.textContent = getText(key);
+    label.setAttribute('data-i18n', key);
+    watchBtn.setAttribute('aria-label', getText(key));
+}
+
 function galleryStopWatch() {
     if (galleryState.watchTimer) {
         clearInterval(galleryState.watchTimer);
@@ -97,7 +109,7 @@ function galleryStopWatch() {
     galleryState.dirHandle = null;
     var watchBtn = document.getElementById('gallery-watch-btn');
     if (watchBtn) {
-        watchBtn.textContent = 'Watch';
+        gallerySetWatchLabel(false);
         watchBtn.classList.remove('active');
     }
 }
@@ -252,12 +264,68 @@ function galleryUpdatePathBar() {
     galleryRenderPathMenu();
 }
 
-function galleryDirStorage() {
-    if (typeof localforage === 'undefined') return null;
-    if (!galleryState.dirStorage) {
-        galleryState.dirStorage = localforage.createInstance({ name: 'galleryDirStorage' });
-    }
-    return galleryState.dirStorage;
+// Directory handles are persisted with raw IndexedDB, NOT localforage.
+// localforage JSON-serializes any value that is not an ArrayBuffer/Blob, and
+// FileSystemDirectoryHandle keeps name/kind on its prototype — JSON.stringify
+// reduces it to {}. Every saved path would then fail the handle check and fall
+// back to openGalleryFolder(), whose OS dialog always starts at the last-used
+// location. IndexedDB stores the handle through the structured clone algorithm,
+// which preserves it across sessions.
+var GALLERY_HANDLE_DB = 'galleryHandleDb';
+var GALLERY_HANDLE_STORE = 'handles';
+
+function galleryHandleDb() {
+    return new Promise(function (resolve, reject) {
+        if (typeof indexedDB === 'undefined') {
+            reject(new Error('IndexedDB unavailable'));
+            return;
+        }
+        var req = indexedDB.open(GALLERY_HANDLE_DB, 1);
+        req.onupgradeneeded = function () {
+            var db = req.result;
+            if (!db.objectStoreNames.contains(GALLERY_HANDLE_STORE)) {
+                db.createObjectStore(GALLERY_HANDLE_STORE);
+            }
+        };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error); };
+        req.onblocked = function () { reject(new Error('IndexedDB upgrade blocked')); };
+    });
+}
+
+function galleryHandleStoreSet(key, value) {
+    return galleryHandleDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(GALLERY_HANDLE_STORE, 'readwrite');
+            tx.objectStore(GALLERY_HANDLE_STORE).put(value, key);
+            tx.oncomplete = function () { resolve(); };
+            tx.onerror = function () { reject(tx.error); };
+            tx.onabort = function () { reject(tx.error); };
+        });
+    });
+}
+
+function galleryHandleStoreGet(key) {
+    return galleryHandleDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(GALLERY_HANDLE_STORE, 'readonly');
+            var req = tx.objectStore(GALLERY_HANDLE_STORE).get(key);
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error); };
+        });
+    });
+}
+
+function galleryHandleStoreDelete(key) {
+    return galleryHandleDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+            var tx = db.transaction(GALLERY_HANDLE_STORE, 'readwrite');
+            tx.objectStore(GALLERY_HANDLE_STORE).delete(key);
+            tx.oncomplete = function () { resolve(); };
+            tx.onerror = function () { reject(tx.error); };
+            tx.onabort = function () { reject(tx.error); };
+        });
+    });
 }
 
 function galleryDirHandleKey(path) {
@@ -265,17 +333,14 @@ function galleryDirHandleKey(path) {
 }
 
 function galleryPersistDirHandle(handle) {
-    var storage = galleryDirStorage();
-    if (!storage || !handle || !handle.name) return;
-    storage.setItem(galleryDirHandleKey(handle.name), handle).catch(function (err) {
+    if (!handle || !handle.name) return;
+    galleryHandleStoreSet(galleryDirHandleKey(handle.name), handle).catch(function (err) {
         galleryLogger.warn('Failed to persist directory handle: ' + err);
     });
 }
 
 function galleryRemoveDirHandle(path) {
-    var storage = galleryDirStorage();
-    if (!storage) return;
-    storage.removeItem(galleryDirHandleKey(path)).catch(function (err) {
+    galleryHandleStoreDelete(galleryDirHandleKey(path)).catch(function (err) {
         galleryLogger.warn('Failed to remove persisted directory handle: ' + err);
     });
 }
@@ -796,7 +861,7 @@ function galleryToggleWatch() {
         galleryState.dirHandle = handle;
         galleryState.watchedRootId = rootId;
         galleryState.watchActive = true;
-        btn.textContent = 'Watching';
+        gallerySetWatchLabel(true);
         btn.classList.add('active');
         galleryPersistDirHandle(handle);
         galleryAddSavedPath(rootId);
@@ -916,10 +981,8 @@ function galleryFindUsableHandle(lastPath) {
     if (galleryState.dirHandle && galleryState.dirHandle.name === lastPath) {
         return Promise.resolve(galleryState.dirHandle);
     }
-    var storage = galleryDirStorage();
-    if (!storage) return Promise.resolve(null);
 
-    return storage.getItem(galleryDirHandleKey(lastPath)).then(function (handle) {
+    return galleryHandleStoreGet(galleryDirHandleKey(lastPath)).then(function (handle) {
         if (!handle || handle.name !== lastPath) return null;
         if (!handle.queryPermission || !handle.requestPermission) return null;
         return handle.queryPermission({ mode: 'read' }).then(function (perm) {
