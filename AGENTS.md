@@ -13,8 +13,15 @@ npm run lint                 # ESLint, js/ only, .eslintrc.json (NOT eslint.conf
 npm run lint:fix
 npm run format               # scripts/remove-spaces.cjs — rewrites js/ IN PLACE
 npm run check-translations   # en/zh key parity in js/ui/third/i18next.js
-python 99_server.py          # dev server on :8000, CORS + no-cache + SW headers
+python -m unittest discover -s 99_tests   # gallery filesystem bridge (Python)
+python 99_server.py          # dev server on :8000, loopback only, gallery API
 ```
+
+- `99_server.py` binds **127.0.0.1 only** and sends **no CORS header**. It exposes
+  read-only `/api/fs/{session,list,image}` endpoints that read arbitrary paths.
+  Every request needs the token printed at startup in `X-Gallery-Token`, plus a
+  local `Host` and a same-origin `Sec-Fetch-Site`. Do not loosen any of the four
+  checks in `gallery_fs_api.py`.
 
 - `npm run format` only walks `js/` (hardcoded `targetDir`), skips `*.min.js` and
   the excluded dirs. It strips ALL leading indentation and spaces around
@@ -54,6 +61,7 @@ style violation — do not "clean it up".
 | Layer panel | `js/layer/layer-management.js` | hierarchical render, 60ms debounce |
 | Blend modes | `js/layer/blend/blend.js` | 25 Photoshop modes via PixiJS GPU |
 | Multi-page state | `btmProjectsMap` + `chengeCanvasByGuid()` | pages keyed by GUID |
+| Gallery folder access | `js/ui/gallery.js` + `gallery_fs_api.py` | three source modes: `handle` (File System Access API), `server` (loopback API — Brave has no FSA), `input` (`file://` degrade, browse only) |
 
 ## NESTED INSTRUCTION FILES
 
@@ -144,5 +152,10 @@ Provider files: `local-comfyui-provider.js`, `local-sdwebui-provider.js`
 - AI tasks carry `canvasGuid`; results apply via an offscreen canvas if the user
   navigated to another page mid-generation.
 - Cross-page-safe: never assume the active canvas is the one the task started on.
+- The gallery's server mode reads images through `/api/fs/image` into real `File`
+  objects — `galleryRenderEntries` calls `URL.createObjectURL(entry.file)`, which
+  throws on a plain object. Never pass a hand-rolled stand-in to `galleryLoadFolder`.
+- Server-mode saved keys are `path::<absolute path>`, never the leaf name: two
+  folders can share a leaf name (`D:\a\shots`, `D:\b\shots`).
 - `.claude/settings.local.json` contains stale absolute paths from another
   machine — ignore its path entries.
