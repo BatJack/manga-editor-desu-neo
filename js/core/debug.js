@@ -387,6 +387,65 @@ return false;
 }
 
 
+// Every identifier gallery.js calls must resolve. Removing the server-mode
+// bridge left three galleryForgetServerPath() call sites behind, and the
+// ReferenceError they raised broke removing a saved path, clearing them all,
+// and removing a folder. This walks the source and fails on any call to a
+// function that is neither defined in the file nor a known global.
+async function testGalleryNoUndefinedCalls(){
+TestRunner.reset();
+if(typeof gallerySourceText!=='undefined'){
+const source=await gallerySourceText();
+const KNOWN_GLOBALS=['showDirectoryPicker','fetch','setTimeout','clearTimeout','setInterval',
+'clearInterval','requestAnimationFrame','cancelAnimationFrame','queueMicrotask','structuredClone',
+'indexedDB','URL','Blob','File','FileReader','FormData','TextDecoder','TextEncoder','JSON','Math',
+'Object','Array','String','Number','Boolean','Date','Error','Promise','Map','Set','parseInt','parseFloat',
+'isNaN','isFinite','encodeURIComponent','decodeURIComponent','encodeURI','decodeURI','getText',
+'getTranslation','createToast','createToastError','loadGalleryImageToCanvas','fabric','canvas',
+'getCanvasGUID','updateLayerPanel','EventDelegator','galleryLogger','uiLogger','logger','warn',
+'info','error','debug','trace','console','getRandomNumber','ArrayBufferUtils','deepCopy','TaskQueue',
+'isPanel','if','for','while','switch','catch','return','typeof','function','new','await','of','in'];
+
+if(!source){
+console.warn('[Test Skip] gallery source text not available');
+return false;
+}
+
+// Defined names: function declarations and top-level var/const/let bindings.
+const defined=new Set();
+const decl=/(?:^|\n)\s*(?:function\s+([A-Za-z_$][\w$]*)|(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=)/g;
+let m;
+while((m=decl.exec(source))!==null){defined.add(m[1]||m[2]);}
+
+// Call sites: name( not preceded by a dot and not a declaration.
+const stripped=source.replace(/\/\*[\s\S]*?\*\//g,' ').replace(/\/\/[^\n]*/g,' ')
+.replace(/'(?:\\.|[^'\\])*'/g,"''").replace(/"(?:\\.|[^"\\])*"/g,'""');
+const unknown={};
+const call=/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g;
+while((m=call.exec(stripped))!==null){
+const name=m[1];
+if(defined.has(name)||KNOWN_GLOBALS.indexOf(name)!==-1)continue;
+unknown[name]=(unknown[name]||0)+1;
+}
+
+const names=Object.keys(unknown).filter(function(n){return n!=='resolve'&&n!=='reject'&&n!=='onEntry'&&n!=='step';});
+TestRunner.assertEquals(0,names.length,
+'No call to an undefined function in gallery.js: '+(names.length?names.join(', '):'none'));
+return TestRunner.printResults('Gallery Undefined Calls');
+}
+}
+
+
+// Reads gallery.js as text so the undefined-call check can scan it. Fetching
+// the already-loaded script keeps this working on file:// too.
+function gallerySourceText(){
+if(typeof fetch!=='function')return '';
+return fetch('js/ui/gallery.js').then(function(r){return r.text();})
+.then(function(t){gallerySourceCache=t;return t;})
+.catch(function(){return gallerySourceCache||'';});
+}
+var gallerySourceCache='';
+
 // FileSystemDirectoryHandle.values() returns an AsyncIterableIterator, not a
 // Promise - it has no .then(). galleryWalkHandle already iterates it correctly;
 // this pins the shape that actually threw in galleryWatchPoll.
@@ -436,6 +495,7 @@ colorConversion:testColorConversion()
 
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
+results.galleryNoUndefinedCalls=await testGalleryNoUndefinedCalls();
 results.galleryHandleStore=await testGalleryHandleStore();
 results.galleryHandleIteration=await testGalleryHandleIteration();
 

@@ -154,10 +154,9 @@ function galleryRemoveRoot(rootId) {
             : null;
     }
 
-    // Unloading a folder also forgets its stored path, so a folder removed by
-    // its section header does not reappear after the next reload.
-    galleryForgetServerPath(rootId);
-
+    // Unloading a folder only clears the loaded images. The remembered-path
+    // list is deliberately left alone - removing an entry from that list is a
+    // separate action in the path bar, so a folder can be closed and reopened.
     galleryLogger.info('Gallery: removed folder ' + rootId);
     galleryUpdateInfo();
 }
@@ -374,8 +373,6 @@ function galleryRemoveSavedPath(path, e) {
     var paths = (galleryState.savedPaths || []).filter(function (p) { return p !== path; });
     gallerySetSavedPaths(paths);
     galleryRemoveDirHandle(path);
-    // Also drop the stored absolute path, or it would be restored on reload.
-    galleryForgetServerPath(path);
     try {
         localStorage.removeItem(GALLERY_LAST_PATH_KEY);
     } catch (err) {
@@ -394,7 +391,6 @@ function galleryClearSavedPath(e) {
     }
     (galleryState.savedPaths || []).forEach(function (p) {
         galleryRemoveDirHandle(p);
-        galleryForgetServerPath(p);
     });
     gallerySetSavedPaths([]);
     try {
@@ -533,16 +529,19 @@ function galleryUpdateSectionCount(section) {
     if (countEl) countEl.textContent = String(section.files.length);
 }
 
+// Toggled via a class rather than an inline style: an inline display would win
+// over the stylesheet and could not be reverted by any later CSS rule.
 function galleryUpdateWatchButton() {
     var watchBtn = document.getElementById('gallery-watch-btn');
     if (!watchBtn) return;
-    // Watch needs a re-pollable source: a handle, or the loopback bridge.
-    // Plain input mode has neither.
+    // Watch needs a re-pollable source. Plain input mode has none.
     if (galleryState.sourceMode === 'input') {
-        watchBtn.style.display = 'none';
+        watchBtn.classList.add('gallery-hidden');
+        watchBtn.classList.remove('gallery-visible');
         return;
     }
-    watchBtn.style.display = 'inline-flex';
+    watchBtn.classList.add('gallery-visible');
+    watchBtn.classList.remove('gallery-hidden');
 }
 
 // ── section DOM ────────────────────────────────────────────
