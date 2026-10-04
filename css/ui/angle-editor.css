@@ -4,7 +4,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background-color:rgba(0,0,0,0.7);
+background-color:rgba(10,8,6,.72);
 z-index:var(--z-modal);
 display:flex;
 align-items:center;
@@ -164,7 +164,7 @@ background-color:var(--background-color-C);
 #angle-generate-btn{
 padding:8px 20px;
 background-color:var(--accent-color,var(--accent));
-color:#ffffff;
+color:var(--accent-on);
 border:none;
 border-radius:var(--fjm-button-border-radius);
 cursor:pointer;

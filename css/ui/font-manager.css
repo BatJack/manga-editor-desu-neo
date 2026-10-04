@@ -6,7 +6,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--color-base);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--elev-3);
   z-index: var(--z-font-manager);
   width: 85%;
   max-width: 85%;
@@ -24,7 +24,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(10, 8, 6, 0.62);
   z-index: var(--z-overlay);
   backdrop-filter: blur(4px);
 }
@@ -80,7 +80,7 @@
 
 .fm-fontInputContainer button {
   background: var(--accent);
-  color: var(--color-text-primary);
+  color: var(--accent-on);
   border: none;
   padding: 6px 12px;
   border-radius: var(--fjm-button-border-radius);
@@ -110,11 +110,11 @@
 .fm-fontInputContainer textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(44, 92, 255, 0.2);
+  box-shadow: 0 0 0 2px var(--accent-dim);
 }
 
 .fm-fontInputContainer textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-2);
 }
 
 #fm-fontFileUpload {
@@ -144,7 +144,7 @@
 }
 
 .fm-modalCloseButton:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--hover-strong);
   color: var(--color-text-primary);
 }
 
@@ -255,7 +255,7 @@ position: fixed;
 background: var(--color-secondary);
 border: 1px solid var(--fjm-border-color);
 border-radius: var(--fjm-button-border-radius);
-box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+box-shadow: var(--elev-2);
 overflow-y: auto;
 z-index: var(--z-font-manager);
 color: var(--color-text-primary);
@@ -319,5 +319,5 @@ font-size: 16px;
 
 .fm-dropdown-content::-webkit-scrollbar-thumb {
   background: var(--color-tertiary);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
 }

@@ -1,9 +1,9 @@
 .introjs-tooltip {
-  background-color: rgba(44, 44, 44, 0.9);
+  background-color: rgba(35, 32, 28, 0.95);
   color: var(--accent);
-  border-radius: var(--fjm-border-radius);
+  border-radius: var(--radius-md);
   padding: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elev-2);
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
   max-width: 400px;
@@ -20,15 +20,15 @@
 .introjs-button, .introjs-tooltip .introjs-button {
   background-color: var(--bg-0);
   border: 1px solid var(--accent);
-  border-radius: var(--fjm-button-border-radius);
-  color: #fff;
+  border-radius: var(--radius-sm);
+  color: var(--text-0);
   padding: 10px 15px;
   text-transform: uppercase;
   transition: background-color 0s ease-in-out, transform 0s ease-in-out; /* 即時に切り替え */
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--elev-1);
 }
 
 .introjs-button:hover, .introjs-tooltip .introjs-button:hover {
@@ -37,7 +37,7 @@
 }
 
 .introjs-overlay {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(10, 8, 6, 0.72);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;

@@ -1,7 +1,10 @@
 /* ============================================================
-   DESIGN TOKENS
+   DESIGN TOKENS  —  "CALDERA" visual language
    ------------------------------------------------------------
-   Layered token system for the manga editor shell.
+   Volcanic caldera aesthetic: cooled basalt surfaces, a single
+   molten-amber accent, sulfur/moss/lava semantic status, sharp
+   fractured-rock geometry (tight radius scale), warm-tinted
+   shadows (never pure black, never pure white).
    - `:root` holds theme-independent tokens (space, radius,
      motion, type, layout, z-index) and legacy aliases.
    - `.light-mode` / `.dark-mode` hold the color tokens.
@@ -11,44 +14,45 @@
    ============================================================ */
 
 :root {
-  /* ---- Neutral surfaces (fallback = dark) ---- */
-  --bg-0: #17181a;
-  --bg-1: #1e2023;
-  --bg-2: #26292d;
-  --bg-3: #303439;
+  /* ---- Neutral surfaces (fallback = dark basalt) ---- */
+  --bg-0: #141210;
+  --bg-1: #1b1815;
+  --bg-2: #23201c;
+  --bg-3: #2e2a25;
 
   /* ---- Text ---- */
-  --text-0: #f2f3f5;
-  --text-1: #c8ccd2;
-  --text-2: #8b9199;
+  --text-0: #f2ede6;
+  --text-1: #c9c1b6;
+  --text-2: #8d857a;
 
-  /* ---- Borders ---- */
-  --border-subtle:  rgba(255,255,255,.08);
-  --border-default: rgba(255,255,255,.16);
-  --border-strong:  rgba(255,255,255,.28);
+  /* ---- Borders (warm ash, not white) ---- */
+  --border-subtle:  rgba(242,220,200,.07);
+  --border-default: rgba(242,220,200,.14);
+  --border-strong:  rgba(242,220,200,.26);
 
   /* ---- Interaction tints ---- */
-  --hover:        rgba(255,255,255,.06);
-  --hover-strong: rgba(255,255,255,.12);
+  --hover:        rgba(242,220,200,.05);
+  --hover-strong: rgba(242,220,200,.10);
 
-  /* ---- Single brand accent + semantic status ---- */
-  --accent:       #d64545;
-  --accent-hover: #e15a5a;
-  --accent-dim:   rgba(214,69,69,.16);
-  --ok:     #3fb950;
-  --warn:   #d29922;
-  --danger: #f85149;
-  --info:   #58a6ff;
+  /* ---- Single brand accent (molten amber) + semantic status ---- */
+  --accent:       #e8722a;
+  --accent-hover: #f5863f;
+  --accent-dim:   rgba(232,114,42,.15);
+  --accent-on:    #17100a;   /* foreground on solid accent (obsidian on lava) */
+  --ok:     #7fae62;   /* moss on cooled rock */
+  --warn:   #d9a441;   /* sulfur */
+  --danger: #e0553f;   /* lava red */
+  --info:   #7d9fb8;   /* smoke */
 
-  /* ---- Elevation (tinted, never pure black) ---- */
-  --elev-1: 0 1px 2px rgba(0,0,0,.35);
-  --elev-2: 0 4px 12px rgba(0,0,0,.45);
-  --elev-3: 0 16px 48px rgba(0,0,0,.55);
+  /* ---- Elevation (warm-tinted, never pure black) ---- */
+  --elev-1: 0 1px 2px rgba(10,8,6,.40);
+  --elev-2: 0 4px 12px rgba(10,8,6,.50);
+  --elev-3: 0 16px 48px rgba(10,8,6,.60);
 
-  /* ---- Radius scale (one system) ---- */
-  --radius-sm:   6px;   /* controls: buttons, inputs */
-  --radius-md:   10px;  /* panels, cards, windows */
-  --radius-lg:   14px;  /* modals, overlays */
+  /* ---- Radius scale (one system: sharp geology) ---- */
+  --radius-sm:   2px;   /* controls: buttons, inputs */
+  --radius-md:   4px;   /* panels, cards, windows */
+  --radius-lg:   6px;   /* modals, overlays */
   --radius-pill: 999px;
 
   /* ---- Spacing scale ---- */
@@ -64,10 +68,11 @@
   --dur-2: 180ms;
   --ease: cubic-bezier(.2,.7,.2,1);
   --focus-ring: 2px solid var(--accent);
+  --select-arrow: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 fill=%27none%27 stroke=%27rgba(201,193,182,0.9)%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E');
 
-  /* ---- Typography ---- */
-  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
-  --font-mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  /* ---- Typography (Caldera: neutral grotesque UI + technical mono) ---- */
+  --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* ============================================================
      LEGACY ALIASES - resolve dynamically against the active theme
@@ -139,13 +144,13 @@
   --btn-active-bg:           var(--accent-dim);
   --btn-active-border-color: var(--accent);
   --btn-active-shadow:       0 0 0 1px var(--accent-dim);
-  --btn-danger-bg:           rgba(248,81,73,.12);
-  --btn-danger-border-color: rgba(248,81,73,.30);
-  --btn-danger-hover-bg:     rgba(248,81,73,.22);
+  --btn-danger-bg:           rgba(224,85,63,.12);
+  --btn-danger-border-color: rgba(224,85,63,.30);
+  --btn-danger-hover-bg:     rgba(224,85,63,.22);
   --btn-danger-color:        var(--danger);
-  --btn-action-bg:           rgba(63,185,80,.12);
-  --btn-action-border-color: rgba(63,185,80,.30);
-  --btn-action-hover-bg:     rgba(63,185,80,.22);
+  --btn-action-bg:           rgba(127,174,98,.12);
+  --btn-action-border-color: rgba(127,174,98,.30);
+  --btn-action-hover-bg:     rgba(127,174,98,.22);
   --btn-action-color:        var(--ok);
   --btn-transition:          background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
 
@@ -163,7 +168,7 @@
   --layer-btn-bg:            var(--bg-2);
   --layer-btn-border:        var(--border-subtle);
   --layer-btn-hover:         var(--hover-strong);
-  --layer-btn-danger-hover:  rgba(248,81,73,.25);
+  --layer-btn-danger-hover:  rgba(224,85,63,.25);
   --layer-preview-bg:        var(--bg-0);
   --layer-preview-border:    var(--border-subtle);
 
@@ -179,8 +184,8 @@
   --radio-checked-background:    var(--accent);
   --toggle-off-background:       var(--bg-3);
   --toggle-on-background:        var(--accent);
-  --toggle-button-color:         #f2f3f5;
-  --toggle-button-shadow:        rgba(0,0,0,.3);
+  --toggle-button-color:         #f2ede6;
+  --toggle-button-shadow:        rgba(10,8,6,.35);
   --color-button-bg:             var(--bg-2);
   --color-button-hover-bg:       var(--bg-3);
   --color-window-border:         1px solid var(--border-default);
@@ -365,71 +370,74 @@
 }
 
 /* ============================================================
-   LIGHT THEME ("paper")
+   LIGHT THEME ("pumice" - pale volcanic stone)
    ============================================================ */
 .light-mode {
-  --bg-0: #f4f5f6;
-  --bg-1: #ffffff;
-  --bg-2: #eceef1;
-  --bg-3: #e2e5e9;
+  --bg-0: #f3efe9;
+  --bg-1: #faf8f4;
+  --bg-2: #e9e3da;
+  --bg-3: #ddd5c9;
 
-  --text-0: #14161a;
-  --text-1: #3a4048;
-  --text-2: #6b7280;
+  --text-0: #211b15;
+  --text-1: #4d453b;
+  --text-2: #7d7365;
 
-  --border-subtle:  rgba(0,0,0,.08);
-  --border-default: rgba(0,0,0,.14);
-  --border-strong:  rgba(0,0,0,.24);
+  --border-subtle:  rgba(33,27,21,.08);
+  --border-default: rgba(33,27,21,.16);
+  --border-strong:  rgba(33,27,21,.28);
 
-  --hover:        rgba(0,0,0,.05);
-  --hover-strong: rgba(0,0,0,.10);
+  --hover:        rgba(33,27,21,.05);
+  --hover-strong: rgba(33,27,21,.10);
 
-  --accent:       #c23a3a;
-  --accent-hover: #a82f2f;
-  --accent-dim:   rgba(194,58,58,.12);
-  --ok:     #2f8f3f;
-  --warn:   #9a6b00;
-  --danger: #c0392b;
-  --info:   #2563c9;
+  --accent:       #b3521b;   /* burnt lava, AA-safe under warm cream */
+  --accent-hover: #9a4515;
+  --accent-dim:   rgba(179,82,27,.12);
+  --accent-on:    #fdf9f3;
+  --ok:     #4a7a38;
+  --warn:   #8f6410;
+  --danger: #b03421;
+  --info:   #3d6480;
 
-  --elev-1: 0 1px 2px rgba(20,22,26,.08);
-  --elev-2: 0 4px 12px rgba(20,22,26,.12);
-  --elev-3: 0 16px 48px rgba(20,22,26,.18);
+  --elev-1: 0 1px 2px rgba(33,27,21,.08);
+  --elev-2: 0 4px 12px rgba(33,27,21,.12);
+  --elev-3: 0 16px 48px rgba(33,27,21,.18);
 
-  --toggle-button-color: #ffffff;
+  --toggle-button-color: #fdf9f3;
+  --select-arrow: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 fill=%27none%27 stroke=%27rgba(77,69,59,0.9)%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E');
 }
 
 /* ============================================================
-   DARK THEME (default; declared last so it wins on conflict)
+   DARK THEME ("caldera" - cooled basalt; default, wins on conflict)
    ============================================================ */
 .dark-mode {
-  --bg-0: #17181a;
-  --bg-1: #1e2023;
-  --bg-2: #26292d;
-  --bg-3: #303439;
+  --bg-0: #141210;
+  --bg-1: #1b1815;
+  --bg-2: #23201c;
+  --bg-3: #2e2a25;
 
-  --text-0: #f2f3f5;
-  --text-1: #c8ccd2;
-  --text-2: #8b9199;
+  --text-0: #f2ede6;
+  --text-1: #c9c1b6;
+  --text-2: #8d857a;
 
-  --border-subtle:  rgba(255,255,255,.08);
-  --border-default: rgba(255,255,255,.16);
-  --border-strong:  rgba(255,255,255,.28);
+  --border-subtle:  rgba(242,220,200,.07);
+  --border-default: rgba(242,220,200,.14);
+  --border-strong:  rgba(242,220,200,.26);
 
-  --hover:        rgba(255,255,255,.06);
-  --hover-strong: rgba(255,255,255,.12);
+  --hover:        rgba(242,220,200,.05);
+  --hover-strong: rgba(242,220,200,.10);
 
-  --accent:       #d64545;
-  --accent-hover: #e15a5a;
-  --accent-dim:   rgba(214,69,69,.16);
-  --ok:     #3fb950;
-  --warn:   #d29922;
-  --danger: #f85149;
-  --info:   #58a6ff;
+  --accent:       #e8722a;   /* molten amber glow */
+  --accent-hover: #f5863f;
+  --accent-dim:   rgba(232,114,42,.15);
+  --accent-on:    #17100a;   /* obsidian text on lava */
+  --ok:     #7fae62;
+  --warn:   #d9a441;
+  --danger: #e0553f;
+  --info:   #7d9fb8;
 
-  --elev-1: 0 1px 2px rgba(0,0,0,.35);
-  --elev-2: 0 4px 12px rgba(0,0,0,.45);
-  --elev-3: 0 16px 48px rgba(0,0,0,.55);
+  --elev-1: 0 1px 2px rgba(10,8,6,.40);
+  --elev-2: 0 4px 12px rgba(10,8,6,.50);
+  --elev-3: 0 16px 48px rgba(10,8,6,.60);
 
-  --toggle-button-color: #f2f3f5;
+  --toggle-button-color: #f2ede6;
 }

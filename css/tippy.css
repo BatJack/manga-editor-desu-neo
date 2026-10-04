@@ -1,31 +1,31 @@
 .tippy-box[data-theme~='retro'] {
- background-color: #ffcc00;
- color: #333;
- border: 2px solid #333;
+ background-color: #d9a441;
+ color: #17100a;
+ border: 2px solid #17100a;
  font-family: 'Courier New', Courier, monospace;
  font-size: 14px;
- box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+ box-shadow: 2px 2px 5px rgba(10, 8, 6, 0.4);
  transition: all 1s ease;
 }
 .tippy-box[data-theme~='retro'][data-state='hidden'] {
  opacity: 0;
 }
 .tippy-box[data-theme~='retro'] .tippy-arrow {
- color: #ffcc00;
+ color: #d9a441;
 }
 
 .tippy-box[data-theme~='light'] {
- background-color: #fff;
- color: #333;
- border: 2px solid #333;
+ background-color: #faf8f4;
+ color: #211b15;
+ border: 2px solid #211b15;
  font-family: 'Courier New', Courier, monospace;
  font-size: 14px;
- box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+ box-shadow: 2px 2px 5px rgba(10, 8, 6, 0.25);
  transition: all 1s ease;
 }
 .tippy-box[data-theme~='light'][data-state='hidden'] {
  opacity: 0;
 }
 .tippy-box[data-theme~='light'] .tippy-arrow {
- color: #fff;
+ color: #faf8f4;
 }

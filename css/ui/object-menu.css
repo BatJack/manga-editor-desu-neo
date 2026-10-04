@@ -10,10 +10,10 @@ font-size: var(--fjm-font-size);
 user-select: none;
 flex-direction: column;
 border: 1px solid var(--fjm-border-color);
-box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+box-shadow: var(--elev-2);
 opacity: 0;
 transform: scale(0.95);
-transition: opacity 0.15s ease, transform 0.15s ease;
+transition: opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
 pointer-events: none;
 }
 
@@ -36,7 +36,7 @@ font-size: var(--fjm-font-size);
 width: var(--fjm-button-width);
 text-align: var(--fjm-button-text-align);
 white-space: var(--fjm-button-white-space);
-transition: background-color 0.12s ease, color 0.12s ease;
+transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
 display: flex;
 align-items: center;
 gap: 6px;

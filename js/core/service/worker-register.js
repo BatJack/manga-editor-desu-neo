@@ -23,8 +23,9 @@ let registration;
 if (typeof window!=="undefined") {
 window.addEventListener("load",function () {
 if (isPWAEligible()) {
+const swScriptPath=location.pathname.replace(/[^/]*$/,"")+"service-worker.js";
 navigator.serviceWorker
-.register("/SP-MangaEditer/service-worker.js")
+.register(swScriptPath)
 .then(function (reg) {
 registration=reg;
 serviceLogger.info("Service Worker Register Success:",registration.scope);

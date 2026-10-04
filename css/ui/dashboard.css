@@ -5,7 +5,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(10, 8, 6, 0.62);
     z-index: var(--z-modal);
     display: none;
     justify-content: center;
@@ -43,7 +43,7 @@
 }
 
 .dashboard-modal-close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--hover-strong);
 }
 
 /* Dashboard Styles */
@@ -239,14 +239,14 @@
 .tag-bar-container {
     background: var(--color-secondary);
     height: 4px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
 .tag-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), var(--ok));
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     transition: width 0.3s ease;
 }
 
@@ -301,7 +301,7 @@
 .heatmap-cell {
     width: 20px;
     height: 20px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.1s;
@@ -461,7 +461,7 @@
 .calendar-cell {
     width: 11px;
     height: 11px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
 }
 
@@ -488,7 +488,7 @@
 .calendar-legend-cell {
     width: 11px;
     height: 11px;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
 }
 
 /* Success Rate */
@@ -566,7 +566,7 @@
 
 .goal-progress-wrap {
     background: var(--color-secondary);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     height: 20px;
     overflow: hidden;
     position: relative;
@@ -575,7 +575,7 @@
 .goal-progress-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), var(--ok));
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     transition: width 0.4s ease;
     display: flex;
     align-items: center;
@@ -650,7 +650,7 @@
 .dashboard-container::-webkit-scrollbar-thumb,
 .top-tags-container::-webkit-scrollbar-thumb {
     background: var(--color-tertiary);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
 }
 
 .dashboard-container::-webkit-scrollbar-thumb:hover,
@@ -787,7 +787,7 @@ body:not(.dark-mode) .dashboard-modal-close-btn {
 }
 
 body:not(.dark-mode) .dashboard-modal-close-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--hover-strong);
 }
 
 body:not(.dark-mode) .calendar-month-label,

@@ -6,7 +6,7 @@ left:50px;
 width:90%;
 height:90%;
 overflow:hidden;
-box-shadow:0 0 15px rgba(0,0,0,0.2);
+box-shadow:var(--elev-2);
 resize:both;
 padding:0;
 background-color:var(--background-color-A);
@@ -92,7 +92,7 @@ transition:all 0.2s
 
 #blendApplyButton.active {
 background-color:var(--color-accent);
-color:var(--color-text-primary);
+color:var(--accent-on);
 border-color:var(--color-accent);
 opacity:1;
 pointer-events:auto;
@@ -317,8 +317,8 @@ opacity:0;
 transition:opacity 0.2s;
 z-index:1;
 pointer-events:none;
-background-color:rgba(0,0,0,0.5);
-border-radius:var(--fjm-button-border-radius);
+background-color:rgba(10,8,6,0.55);
+border-radius:var(--radius-sm);
 padding:0 6px;
 line-height:20px
 }
@@ -330,7 +330,7 @@ opacity:1
 .layer-preview-blend canvas {
 border:1px solid var(--fjm-border-color);
 cursor:grab;
-transition:all 0.3s ease
+transition:border-color var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease)
 }
 
 .layer-preview-blend.unchecked canvas {
@@ -351,7 +351,7 @@ font-size:28px
 }
 
 .layer-preview-blend.unchecked .layer-status-overlay {
-background-color:rgba(0,0,0,0.3);
+background-color:rgba(10,8,6,.45);
 color:var(--danger)
 }
 
@@ -370,7 +370,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background-color:rgba(0,0,0,0.8);
+background-color:rgba(10,8,6,0.82);
 z-index:var(--z-overlay);
 cursor:pointer
 }
@@ -402,7 +402,7 @@ border:2px solid var(--fjm-border-color);
 border-radius:var(--fjm-border-radius);
 padding:20px;
 z-index:var(--z-font-manager);
-box-shadow:0 4px 20px rgba(0,0,0,0.3);
+box-shadow:var(--elev-3);
 display:flex;
 flex-direction:column;
 gap:10px;

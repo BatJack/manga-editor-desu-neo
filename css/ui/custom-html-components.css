@@ -72,7 +72,7 @@ input[type="range"] {
 .slider-value-button:focus-visible {
   color: var(--text-0);
   outline: 1px solid var(--accent);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .jscolor-color-picker:focus-visible {
   outline: var(--focus-ring);
