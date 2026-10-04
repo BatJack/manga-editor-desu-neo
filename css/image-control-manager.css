@@ -54,7 +54,7 @@
 
 .control-row button {
  margin-right: var(--margin-sides-controls);
- color: white;
+ color: var(--text-0);
 }
 
 .panel-header {

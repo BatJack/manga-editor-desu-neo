@@ -51,8 +51,13 @@ saveStateByManual();
 ### ストレージ使い分け
 | バックエンド | 用途 |
 |-------------|------|
-| `localStorage` | アプリ設定、basePrompt、サイドバーツール値（軽量・同期アクセス） |
-| `localforage`(IndexedDB) | auto-save、フォント、ワークフロー、統計（大容量・非同期） |
+| `localStorage` | アプリ設定、basePrompt、サイドバーツール値、ギャラリー最終パス`galleryLastPath`（軽量・同期アクセス） |
+| `localforage`(IndexedDB) | auto-save、フォント、ワークフロー、統計、ギャラリーディレクトリハンドル`galleryDirStorage`（大容量・非同期） |
+
+### ギャラリーフォルダパス（gallery.js）
+- `localStorage`キー`galleryLastPath` … 最後に開いたフォルダ名。フォルダ読込時に保存、起動時にパスバーへ復元
+- `localforage`インスタンス`galleryDirStorage` … `FileSystemDirectoryHandle`（Watchモード開始時に保存）
+- パスバークリックでハンドル復元→`queryPermission`/`requestPermission`確認→ディレクトリ再読込。不可時はフォルダ選択ダイアログを表示
 
 ### アプリ設定（project-management.js）
 `localStorage`キー`localSettingsData`に全設定を一括JSON保存。

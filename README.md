@@ -1,12 +1,12 @@
-[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker) | 
-[日本語](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_JP.md) | 
-[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md)
+[中文](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_CN.md) |
+[English](https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker/blob/main/README_EN.md)  
+
 
 # 漫画编辑器 Desu! 专业版
 
 这是一款连接ComfyUI、A1111 WebUI和Forge的漫画创作Web应用程序。  
 您可以使用演示网站或下载后在浏览器中运行。  
-*注：由于A1111/Forge的开发前景不明确，我们计划在未来仅支持ComfyUI。
+*注：1.由于A1111/Forge的开发前景不明确，我们计划在未来仅支持ComfyUI。2.仅支持Edge和Chrome浏览器。*
 
 支持状态：
 - ComfyUI：SD1.5、SDXL、Pony、Flux1（您也可以使用自己的工作流）
@@ -75,7 +75,7 @@ https://github.com/user-attachments/assets/6f1dae5f-b50f-4b04-8875-f0b07111f2ab
 
 
 ## 功能
-- **多语言支持**：英语、日语、韩语、法语、中文、俄语、西班牙语、葡萄牙语
+- **多语言支持**：英语、中文
 - **页面预设**：预设的漫画面板布局。
 - **面板**：创建和自定义面板。调整形状、颜色、线宽等。
 - **对话气泡**：超过40种对话气泡样式，每种样式都可以配置背景颜色、线条颜色和透明度。

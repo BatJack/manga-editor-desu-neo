@@ -10,8 +10,8 @@
  }
  
  .toast-nier {
-  background: rgba(238, 238, 238, .97);
-  color: #454545;
+  background: #f3efe9;
+  color: #4d453b;
   padding: 12px 16px;
   font-family: 'Share Tech Mono', monospace; ;
   font-weight: 300;
@@ -27,7 +27,7 @@
   left: 3px;
   right: 3px;
   bottom: 3px;
-  border: 1px solid #454545;
+  border: 1px solid rgba(33, 27, 21, 0.4);
  }
  
  .toast-nier .toast-title {
@@ -35,9 +35,9 @@
   text-transform: uppercase;
   margin-bottom: 4px;
   font-weight: 500;
-  color: #333;
+  color: #211b15;
   letter-spacing: 2px;
-  border-bottom: 1px solid rgba(69, 69, 69, 0.3);
+  border-bottom: 1px solid rgba(33, 27, 21, 0.25);
   padding-bottom: 4px;
 }
 
@@ -60,14 +60,14 @@
  }
  
  .toast-dbd {
-  background: rgba(20, 0, 0, 0.95);
-  color: #ff3333;
+  background: rgba(26, 8, 5, 0.96);
+  color: #f08a72;
   padding: 10px 14px;
   font-family: 'Roboto Condensed', sans-serif;
-  border: 1px solid #800;
+  border: 1px solid #e0553f;
   position: relative;
   text-transform: uppercase;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.2), inset 0 0 15px rgba(255, 0, 0, 0.1);
+  box-shadow: 0 0 15px rgba(224, 85, 63, 0.25), inset 0 0 15px rgba(224, 85, 63, 0.10);
   letter-spacing: 1px;
  }
  
@@ -79,8 +79,8 @@
       45deg,
       transparent,
       transparent 10px,
-      rgba(255, 0, 0, 0.05) 10px,
-      rgba(255, 0, 0, 0.05) 20px
+      rgba(224, 85, 63, 0.05) 10px,
+      rgba(224, 85, 63, 0.05) 20px
   );
   pointer-events: none;
  }
@@ -100,9 +100,9 @@
   text-transform: uppercase;
   margin-bottom: 6px;
   font-weight: bold;
-  color: #ff6666;
+  color: #f08a72;
   letter-spacing: 2px;
-  border-bottom: 1px solid rgba(255, 102, 102, 0.3);
+  border-bottom: 1px solid rgba(224, 85, 63, 0.4);
   padding-bottom: 4px;
   position: relative;
   z-index: 1;

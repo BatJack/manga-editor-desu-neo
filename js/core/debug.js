@@ -359,6 +359,96 @@ TestRunner.assertEquals('#ff00ff',hex4.toLowerCase(),'Hex passthrough');
 return TestRunner.printResults('Color Conversion');
 }
 
+// Directory handles must survive persistence via structured clone. JSON-based
+// stores (localforage) reduce a FileSystemDirectoryHandle to {}, which silently
+// forces every saved path back through the OS picker at its last-used location.
+// Map is the deterministic stand-in: structured-clone keeps it, JSON erases it.
+async function testGalleryHandleStore(){
+if(typeof galleryHandleStoreSet!=='undefined'&&typeof indexedDB!=='undefined'){
+TestRunner.reset();
+const key='__test_handle__';
+try{
+await galleryHandleStoreDelete(key);
+const probe=new Map([['kind','probe'],['name','probeFolder']]);
+await galleryHandleStoreSet(key,probe);
+const back=await galleryHandleStoreGet(key);
+TestRunner.assert(back instanceof Map,'Handle store preserves a structured-clone value (JSON would erase it)');
+TestRunner.assertEquals('probeFolder',back instanceof Map?back.get('name'):null,'Handle store round-trips contents intact');
+await galleryHandleStoreDelete(key);
+const gone=await galleryHandleStoreGet(key);
+TestRunner.assert(gone===undefined||gone===null,'Handle store delete removes the entry');
+}catch(err){
+TestRunner.assert(false,'Handle store round-trip does not throw',err.name+': '+err.message);
+}
+return TestRunner.printResults('Gallery Handle Store');
+}
+console.warn('[Test Skip] gallery handle store or IndexedDB not available');
+return false;
+}
+
+// Folder-name keys must stay distinct by FULL path, not leaf name:
+// D:\a\shots and D:\b\shots are different folders with the same leaf.
+function testGalleryServerPathKeys(){
+if(typeof galleryServerPathKey!=='undefined'){
+TestRunner.reset();
+TestRunner.assertEquals('path::D:\\a\\shots',galleryServerPathKey('D:\\a\\shots'),'Key uses the full path');
+TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\b\\shots'),'Same leaf name, different parents stay distinct');
+TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\A\\SHOTS'),'Key comparison is case-sensitive');
+return TestRunner.printResults('Gallery Server Path Keys');
+}
+console.warn('[Test Skip] gallery server source not loaded');
+return false;
+}
+
+function testGalleryPickerModel(){
+if(typeof galleryPickerShouldShowUp!=='undefined'){
+TestRunner.reset();
+TestRunner.assert(galleryPickerShouldShowUp('D:\\a\\b','D:\\a'),'Up is offered below the start directory');
+TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','D:\\a'),'Up is hidden at the start directory');
+TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','C:\\other'),'Up is hidden when the parent is outside the start directory');
+return TestRunner.printResults('Gallery Picker Model');
+}
+console.warn('[Test Skip] gallery folder picker not loaded');
+return false;
+}
+
+function testGalleryWatchDiff(){
+if(typeof galleryDiffImages!=='undefined'){
+TestRunner.reset();
+const before=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:1000,size:1}];
+const after=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:2000,size:9},{name:'c.png',mtime:3000,size:3}];
+const added=galleryDiffImages(before,after);
+TestRunner.assertEquals(1,added.filter(x=>x.name==='c.png').length,'New file detected');
+TestRunner.assertEquals(0,added.filter(x=>x.name==='a.png').length,'Unchanged file not re-added');
+TestRunner.assertEquals(1,added.filter(x=>x.name==='b.png').length,'Modified file treated as changed');
+TestRunner.assertEquals(3,galleryDiffImages([],after).length,'Empty baseline yields every image');
+return TestRunner.printResults('Gallery Watch Diff');
+}
+console.warn('[Test Skip] gallery watch diff not loaded');
+return false;
+}
+
+// gallerySyncRoot removes every entry of a root that is absent from the list
+// it is handed. A watch update must therefore pass existing + new files, or
+// each poll would delete everything loaded by the previous one.
+function testGalleryWatchFileSet(){
+if(typeof galleryWatchFileSet!=='undefined'){
+TestRunner.reset();
+const existing=[{name:'a.png'},{name:'b.png'}];
+const added=[{name:'c.png'}];
+const merged=galleryWatchFileSet(existing,added);
+TestRunner.assertEquals(3,merged.length,'Existing files are retained alongside new ones');
+TestRunner.assertEquals('a.png',merged[0].name,'Existing files come first and are not dropped');
+TestRunner.assertEquals('c.png',merged[2].name,'New files are appended');
+TestRunner.assertEquals(2,galleryWatchFileSet(existing,[]).length,'No new files still yields the full set');
+TestRunner.assertEquals(1,galleryWatchFileSet([],added).length,'Empty baseline yields just the new files');
+TestRunner.assertEquals(0,galleryWatchFileSet(null,null).length,'Null inputs are tolerated');
+return TestRunner.printResults('Gallery Watch File Set');
+}
+console.warn('[Test Skip] gallery watch file set not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -374,6 +464,11 @@ colorConversion:testColorConversion()
 
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
+results.galleryHandleStore=await testGalleryHandleStore();
+results.galleryServerPathKeys=testGalleryServerPathKeys();
+results.galleryPickerModel=testGalleryPickerModel();
+results.galleryWatchDiff=testGalleryWatchDiff();
+results.galleryWatchFileSet=testGalleryWatchFileSet();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

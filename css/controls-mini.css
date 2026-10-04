@@ -8,7 +8,7 @@
   position: relative;
   margin-top: 5px;
   border-radius: var(--fjm-button-border-radius);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: var(--elev-1);
   overflow: visible;
 }
 .controls-mini input,
@@ -18,7 +18,7 @@
   border-radius: var(--textarea-border-radius);
   font-size: 14px;
   background-color: var(--background-color-B);
-  transition: 0.3s ease all;
+  transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
   box-sizing: border-box;
 }
 .controls-mini .label {
@@ -29,7 +29,7 @@
   font-size: 14px;
   color: var(--text-color-B);
   pointer-events: none;
-  transition: 0.3s ease all;
+  transition: top var(--dur-2) var(--ease), font-size var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
 }
 .controls-mini input:focus ~ .label,
 .controls-mini input:not(:placeholder-shown) ~ .label,
@@ -76,7 +76,10 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-size: 8px;
+  background-image: var(--select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 6px;
   background-color: var(--background-color-B);
   padding-right: 24px;
 }

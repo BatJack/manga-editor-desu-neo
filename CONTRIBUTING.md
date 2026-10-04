@@ -245,17 +245,12 @@ Translations are stored in `js/ui/third/i18next.js` in the `resources` constant.
 
 1. Create a new date-keyed entry (YYYYMMDD format)
 2. Place it above existing entries
-3. Add translations for all 10 languages:
-   - `ja` - Japanese
+3. Add translations for both supported languages:
    - `en` - English
-   - `ko` - Korean
-   - `fr` - French
    - `zh` - Chinese
-   - `ru` - Russian
-   - `es` - Spanish
-   - `pt` - Portuguese
-   - `th` - Thai
-   - `de` - German
+
+Only English and Chinese are maintained. Other languages are no longer supported;
+run `npm run check-translations` after every change.
 
 ### Translation Tips
 

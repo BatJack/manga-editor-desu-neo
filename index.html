@@ -62,7 +62,7 @@ const $on = (element, event, callback) => element.addEventListener(event, callba
         ];
         function g() {
             const a = document.createElement("div");
-            a.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background-color:#000;color:#fff;font-size:11px;display:flex;flex-direction:column;z-index:1000;";
+            a.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background-color:#141210;color:#c9c1b6;font-size:11px;display:flex;flex-direction:column;z-index:1000;";
 const b = `<svg viewBox="0 0 100 100" width="100%" height="100%" style="position:absolute;top:0;left:0;opacity:.2;">
   <rect x="5" y="5" width="90" height="90" fill="none" stroke="#aaa" stroke-width="3"/>
   <rect x="7" y="7" width="86" height="30" fill="none" stroke="#aaa" stroke-width="3"/>
@@ -76,7 +76,7 @@ const b = `<svg viewBox="0 0 100 100" width="100%" height="100%" style="position
             const c = document.createElement("div");
             c.style.cssText = "padding:20px;";
             const d = document.createElement("div");
-            d.textContent = "DESU", d.style.cssText = "color:orange; font-size:220px;font-weight:700;", c.appendChild(d), a.appendChild(c);
+            d.textContent = "DESU", d.style.cssText = "color:#e8722a; font-size:220px;font-weight:700;", c.appendChild(d), a.appendChild(c);
             const e = document.createElement("div");
             e.id = "h", e.style.cssText = "flex-grow:1;padding:20px;", f.forEach(() => { const a = document.createElement("div"); a.style.cssText = "margin:8px 0;height:1em;opacity:.9;", e.appendChild(a) }), a.appendChild(e);
             const g = `<svg width="100%" height="40" style="position:absolute;bottom:0;left:0;opacity:.5;"><defs><g id="i"><path d="M1 13L5 17L17 5L13 1L1 13Z M15 3L13 1L16 4M1 13L4 16" stroke="#aaa" stroke-width="1" fill="none"/></g><g id="j"><path d="M3 17L7 13L15 5L13 3L5 11L1 15L3 17Z M14 4L12 2L16 6" stroke="#aaa" stroke-width="1" fill="none"/></g><g id="k"><path d="M3 15C3 17 5 17 5 15C5 13 7 11 9 9C11 7 13 5 15 3M15 3L13 5M15 3L17 5" stroke="#aaa" stroke-width="1" fill="none"/></g></defs></svg>`, h = document.createElement("div");
@@ -88,17 +88,17 @@ const b = `<svg viewBox="0 0 100 100" width="100%" height="100%" style="position
             p.setAttribute("width", "100"), p.setAttribute("height", "100"), p.style.cssText = "position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);";
 
             const q = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-            q.setAttribute("points", "50,10 90,30 90,70 50,90 10,70 10,30"), q.setAttribute("stroke", "#fff"), q.setAttribute("stroke-width", "2"), q.setAttribute("fill", "none");
+            q.setAttribute("points", "50,10 90,30 90,70 50,90 10,70 10,30"), q.setAttribute("stroke", "#f2ede6"), q.setAttribute("stroke-width", "2"), q.setAttribute("fill", "none");
 
             const r = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-            return r.setAttribute("points", "50,25 75,75 25,75"), r.setAttribute("stroke", "#fff"), r.setAttribute("stroke-width", "2"), r.setAttribute("fill", "none"), r.style.transformOrigin = "center", r.style.animation = "n 1s linear infinite", p.appendChild(q), p.appendChild(r), a.appendChild(p), document.body.appendChild(a), { page: a, hexagon: q, triangle: r }
+            return r.setAttribute("points", "50,25 75,75 25,75"), r.setAttribute("stroke", "#f2ede6"), r.setAttribute("stroke-width", "2"), r.setAttribute("fill", "none"), r.style.transformOrigin = "center", r.style.animation = "n 1s linear infinite", p.appendChild(q), p.appendChild(r), a.appendChild(p), document.body.appendChild(a), { page: a, hexagon: q, triangle: r }
         }
         function h(a, b) {
             let c = 0;
             function d() { c < b.length && (a.textContent += b[c], c++, setTimeout(d, 5 + 5 * Math.random())) }
             d()
         }
-        function i(a, b) { a.setAttribute("stroke", "#ffa500"), b.setAttribute("stroke", "#ffa500") }
+        function i(a, b) { a.setAttribute("stroke", "#f5863f"), b.setAttribute("stroke", "#f5863f") }
 
         function k() {
             const { page: a, hexagon: b, triangle: c } = g(), d = a.querySelectorAll("#h div");
@@ -193,6 +193,19 @@ function getElementClasses(element) {
         });
     </script>
 <!-- ========== CSS Stylesheets ========== -->
+<script>
+        /* Apply the saved theme before first paint to avoid a flash of the wrong theme. */
+        (function () {
+            try {
+                var m = localStorage.getItem('mode');
+                if (m !== 'dark-mode' && m !== 'light-mode') {
+                    m = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light-mode' : 'dark-mode';
+                }
+                document.documentElement.classList.remove('dark-mode', 'light-mode');
+                document.documentElement.classList.add(m);
+            } catch (e) { }
+        })();
+    </script>
 <link rel="stylesheet" href="css/core/main-component.css?v=7.2">
 <link rel="stylesheet" href="css/css2.css?v=7.2">
 <link rel="stylesheet" href="css/icon.css?v=7.2">
@@ -225,7 +238,7 @@ function getElementClasses(element) {
 <link rel="stylesheet" href="css/tagify.css?v=7.2" media="print" onload="this.media='all'">
 
 <link rel="stylesheet" href="css/ui/font-manager.css?v=7.2" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="css/ui/gallery.css?v=7.3">
+<link rel="stylesheet" href="css/ui/gallery.css?v=7.5">
 
 <script src="https://cdn.jsdelivr.net/npm/stacktrace-js/dist/stacktrace.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.31.3/tagify.min.js"></script>
@@ -476,30 +489,9 @@ function getElementClasses(element) {
                             <a class="dropdown-item" href="#" onclick="changeLanguage('en', event)">
                                 <span class="flag-icon flag-icon-us"></span> <span data-i18n="english">English</span>
                             </a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('ja', event)">
-                                <span class="flag-icon flag-icon-jp"></span>
-                                <span data-i18n="japanese">日本語</span>
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('ko', event)">
-                                <span class="flag-icon flag-icon-kr"></span> <span data-i18n="korean">한국어</span>
-                            </a>
                             <a class="dropdown-item" href="#" onclick="changeLanguage('zh', event)">
                                 <span class="flag-icon flag-icon-cn"></span> <span data-i18n="chinese">中文</span>
                             </a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('fr', event)">
-                                <span class="flag-icon flag-icon-fr"></span> <span data-i18n="french">Français</span>
-                            </a>
-
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('ru', event)">
-                                <span class="flag-icon flag-icon-ru"></span> <span data-i18n="russian">Русский</span>
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('es', event)">
-                                <span class="flag-icon flag-icon-es"></span> <span data-i18n="spanish">Español</span>
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="changeLanguage('de', event)">
-                                <span class="flag-icon flag-icon-de"></span> <span data-i18n="Germany">Germany</span>
-                            </a>
-
                         </ul>
                     </li>
                 </ul>
@@ -595,49 +587,20 @@ function getElementClasses(element) {
                         </ul>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownDonate" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <span data-i18n="DevelopmentDonations"></span>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownDonate">
-                            <a class="dropdown-item"
-                                href="https://github.com/sponsors/new-sankaku"
-                                target="_blank">
-                                <i class="fab fa-github"></i>
-                                <span>GitHub Sponsors</span>
-                            </a>
-                            <a class="dropdown-item"
-                                href="https://sankaku-desu.booth.pm/items/6399546"
-                                target="_blank">
-                                <span>[Japan] Booth</span>
-                            </a>
-                            <a class="dropdown-item"
-                                href="https://note.com/vivid_walrus6061/n/n40e38122c45b?from=notice"
-                                target="_blank">
-                                <span>[Japan] Note</span>
-                            </a>
-                        </ul>
-                    </li>
-                </ul>
-
-
-
                 <ul class="navbar-nav ms-auto d-flex align-items-center py-2">
                     <li class="nav-item d-flex" >
                      <button data-i18n="pwa_install" id="pwa-install-button" class="btn btn-outline-secondary me-2" style="margin-top: 5px; padding-top: 0px; padding-bottom: 0px; padding-left: 10px;padding-right: 10px;"></button>
                     </li>
-                    <li class="nav-item d-flex align-items-center my-2 d-none">
-                     <i class="fas fa-sun"></i>
-                     <label class="toggle-switchTermaMode mx-2">
-                      <input type="checkbox" id="mode-toggle">
+                    <li class="nav-item d-flex align-items-center my-2">
+                     <i class="material-icons theme-toggle-icon" aria-hidden="true">light_mode</i>
+                     <label class="toggle-switchTermaMode mx-2" for="mode-toggle" title="Toggle light / dark theme">
+                      <input type="checkbox" id="mode-toggle" role="switch" aria-label="Toggle light / dark theme">
                       <span class="slider">
                        <span class="mode-icons">
                        </span>
                       </span>
                      </label>
-                     <i class="fas fa-moon"></i>
+                     <i class="material-icons theme-toggle-icon" aria-hidden="true">dark_mode</i>
                     </li>
                 </ul>
             </div>
@@ -1522,18 +1485,44 @@ function getElementClasses(element) {
             <div class="left_area" id="gallery-area" style="display: none;">
                 <div class="area-header" data-i18n="gallery-title">フォルダ画像</div>
                 <div id="gallery-content">
+                    <div id="gallery-mode-notice" class="gallery-mode-notice" style="display:none;" data-i18n="gallery-mode-degraded"></div>
                     <div class="gallery-toolbar">
                         <button id="gallery-open-folder-btn" onclick="openGalleryFolder()">
                             <i class="material-icons">folder_open</i>
                             <span data-i18n="gallery-open-folder">フォルダを開く</span>
                         </button>
-                        <button id="gallery-watch-btn" onclick="galleryToggleWatch()">Watch</button>
+                        <button id="gallery-watch-btn" onclick="galleryToggleWatch()" data-i18n-title="gallery-watch" aria-label="Watch folder for new images">
+                            <i class="material-icons">visibility</i>
+                            <span data-i18n="gallery-watch">監視</span>
+                        </button>
+                        <button id="gallery-clear-all-btn" onclick="galleryClearAll()" data-i18n-title="gallery-clear-all" aria-label="Clear all folders">
+                            <i class="material-icons">delete_sweep</i>
+                            <span data-i18n="gallery-clear-all">全部清除</span>
+                        </button>
                     </div>
-                    <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;" onclick="galleryRefreshFromPath()" data-i18n-title="gallery-path-refresh" role="button" tabindex="0">
-                        <i class="material-icons">history</i>
-                        <span id="gallery-path-text" class="gallery-path-text"></span>
-                        <i class="material-icons gallery-path-refresh-icon">refresh</i>
-                        <button type="button" class="gallery-path-clear-btn" onclick="galleryClearSavedPath(event)" data-i18n-title="gallery-path-clear" aria-label="Remove saved folder"><i class="material-icons">close</i></button>
+                    <div id="gallery-path-bar" class="gallery-path-bar" style="display:none;">
+                        <span id="gallery-path-toggle" class="gallery-path-toggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" onclick="galleryTogglePathMenu(event)">
+                            <i class="material-icons">history</i>
+                            <span id="gallery-path-text" class="gallery-path-text"></span>
+                            <i class="material-icons gallery-path-caret">expand_more</i>
+                        </span>
+                        <button type="button" class="gallery-path-refresh-btn" onclick="galleryRefreshFromPath(null, event)" data-i18n-title="gallery-path-refresh" aria-label="Refresh saved folder"><i class="material-icons">refresh</i></button>
+                        <button type="button" class="gallery-path-clear-btn" onclick="galleryClearSavedPath(event)" data-i18n-title="gallery-clear-all" aria-label="Clear all saved folders"><i class="material-icons">delete_sweep</i></button>
+                        <div id="gallery-path-menu" class="gallery-path-menu" role="menu" style="display:none;"></div>
+                    </div>
+                    <div id="gallery-fs-picker" class="gallery-fs-picker" style="display:none;">
+                        <div class="gallery-fs-picker-head">
+                            <i class="material-icons">folder</i>
+                            <span id="gallery-fs-picker-path" class="gallery-fs-picker-path"></span>
+                        </div>
+                        <button type="button" id="gallery-fs-picker-up" class="gallery-fs-picker-up" onclick="galleryFolderPickerGoUp()" data-i18n="gallery-picker-up" aria-label="Go to parent folder">
+                            <i class="material-icons">arrow_upward</i>
+                        </button>
+                        <div id="gallery-fs-picker-list" class="gallery-fs-picker-list"></div>
+                        <div class="gallery-fs-picker-actions">
+                            <button type="button" id="gallery-fs-picker-confirm" class="gallery-fs-picker-confirm" onclick="galleryFolderPickerConfirm()" data-i18n="gallery-picker-confirm">使用此文件夹</button>
+                            <button type="button" id="gallery-fs-picker-cancel" class="gallery-fs-picker-cancel" onclick="galleryCloseFolderPicker()" data-i18n="gallery-picker-cancel">取消</button>
+                        </div>
                     </div>
                     <div id="gallery-info" class="gallery-info"></div>
                     <div id="gallery-sections"></div>
@@ -1997,14 +1986,8 @@ function getElementClasses(element) {
     <script src="js/ui/util/event-delegator.js?v=7.2" defer></script>
     <script src="js/ui/third/tippy.js?v=7.2" defer></script>
 
-    <script src="js/ui/third/base-translation/base-de.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-en.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-es.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-fr.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-ja.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-ko.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-ru.js?v=7.2" defer></script>
-    <script src="js/ui/third/base-translation/base-zh.js?v=7.2" defer></script>
+<script src="js/ui/third/base-translation/base-en.js?v=7.2" defer></script>
+<script src="js/ui/third/base-translation/base-zh.js?v=7.2" defer></script>
     <script src="js/ui/third/i18next.js?v=7.2" defer></script>
     <script src="js/dashboard/performance-storage.js?v=7.3" defer></script>
     <script src="js/dashboard/prompt-frequency-storage.js?v=7.3" defer></script>
@@ -2119,7 +2102,7 @@ function getElementClasses(element) {
     <script src="js/core/svg/google-icon-names.js?v=7.2"></script>
     <script src="js/core/svg/google-icon-helper.js?v=7.2"></script>
     <script src="js/ui/bottom-bar.js?v=7.2" defer></script>
-    <script src="js/ui/gallery.js?v=7.3" defer></script>
+    <script src="js/ui/gallery.js?v=7.6" defer></script>
 
     <script src="js/ai/prompt/auto/prompt-map.js?v=7.2" defer></script>
     <script src="js/ai/prompt/auto/story-prompt-map.js?v=7.2" defer></script>

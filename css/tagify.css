@@ -19,7 +19,7 @@
   color: var(--color-text-secondary) !important;
 }
 .tagify__tag__removeBtn {
-  color: #bb86fc;
+  color: var(--danger);
 }
 .tagify__input {
   color: var(--color-text-secondary);

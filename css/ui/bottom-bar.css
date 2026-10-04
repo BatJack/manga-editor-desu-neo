@@ -15,13 +15,13 @@ bottom:0;
 left:50%;
 transform:translateX(-50%);
 width:clamp(320px,40%,720px);
-background-color:var(--background-color-A);
-border-top:1px solid rgba(255,255,255,0.08);
-border-top-left-radius:12px;
-border-top-right-radius:12px;
-transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1), left 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.2s ease;
+background-color:var(--bg-1);
+border-top:1px solid var(--border-subtle);
+border-top-left-radius:var(--radius-md);
+border-top-right-radius:var(--radius-md);
+transition:transform var(--dur-3) var(--ease-spring), width var(--dur-2) var(--ease), left var(--dur-2) var(--ease), border-radius var(--dur-2) var(--ease);
 z-index:var(--z-bottom-drawer);
-box-shadow:0 -1px 3px rgba(0,0,0,0.2);
+box-shadow:var(--elev-2);
 }
 
 .btm-drawer.btm-closed {
@@ -38,8 +38,8 @@ border-radius:0;
 /* ===== Handle ===== */
 .btm-drawer-handle {
 height:30px;
-background:rgba(0,0,0,0.35);
-box-shadow:0 2px 6px rgba(0,0,0,0.3);
+background:var(--bg-2);
+box-shadow:none;
 cursor:pointer;
 display:flex;
 align-items:center;
@@ -47,9 +47,9 @@ padding:0 16px;
 font-size:11px;
 letter-spacing:0.5px;
 user-select:none;
-border-top-left-radius:12px;
-border-top-right-radius:12px;
-transition:background 0.15s ease;
+border-top-left-radius:var(--radius-md);
+border-top-right-radius:var(--radius-md);
+transition:background var(--dur-1) var(--ease);
 }
 
 .btm-drawer:not(.btm-closed) .btm-drawer-handle {
@@ -57,7 +57,7 @@ border-radius:0;
 }
 
 .btm-drawer-handle:hover {
-background:rgba(0,0,0,0.45);
+background:var(--hover-strong);
 }
 
 /* ===== Nav ===== */
@@ -66,8 +66,8 @@ background:rgba(0,0,0,0.45);
 min-width:120px;
 cursor:pointer;
 font-size:11px;
-color:rgba(255,255,255,0.45);
-transition:color 0.15s ease;
+color:var(--text-2);
+transition:color var(--dur-1) var(--ease);
 }
 
 .btm-nav-left {
@@ -77,7 +77,7 @@ text-align:left;
 .btm-nav-center {
 flex:1;
 text-align:center;
-color:rgba(255,255,255,0.55);
+color:var(--text-1);
 font-weight:500;
 }
 
@@ -87,7 +87,7 @@ text-align:right;
 
 .btm-nav-left:hover,
 .btm-nav-right:hover {
-color:rgba(255,255,255,0.9);
+color:var(--text-0);
 }
 
 /* ===== Content ===== */
@@ -137,20 +137,20 @@ height:100%;
 width:auto;
 object-fit:contain;
 cursor:pointer;
-border:2px solid rgba(255,255,255,0.08);
-border-radius:var(--fjm-border-radius);
-transition:border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+border:2px solid var(--border-subtle);
+border-radius:var(--radius-sm);
+transition:border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
 }
 
 .btm-image:hover {
-border-color:rgba(255,255,255,0.25);
-box-shadow:0 4px 16px rgba(0,0,0,0.5);
+border-color:var(--border-strong);
+box-shadow:var(--elev-2);
 transform:translateY(-2px);
 }
 
 .btm-image.btm-active {
-border-color:var(--color-accent);
-box-shadow:0 0 0 1px var(--color-accent), 0 4px 16px rgba(129,0,0,0.3);
+border-color:var(--accent);
+box-shadow:0 0 0 1px var(--accent), var(--elev-2);
 }
 
 /* ===== Page number badge ===== */
@@ -158,15 +158,16 @@ box-shadow:0 0 0 1px var(--color-accent), 0 4px 16px rgba(129,0,0,0.3);
 position:absolute;
 top:6px;
 left:6px;
-background:rgba(0,0,0,0.7);
+background:var(--bg-0);
 backdrop-filter:blur(4px);
-color:rgba(255,255,255,0.8);
+color:var(--text-1);
 padding:1px 7px;
-border-radius:10px;
+border-radius:var(--radius-pill);
 font-size:10px;
 font-weight:500;
 z-index:1;
 letter-spacing:0.5px;
+border:1px solid var(--border-subtle);
 }
 
 /* ===== Action buttons ===== */
@@ -174,14 +175,14 @@ letter-spacing:0.5px;
 .btm-move-btn,
 .btm-delete-btn {
 position:absolute;
-border:none;
+border:1px solid var(--border-subtle);
 cursor:pointer;
 z-index:1;
-color:rgba(255,255,255,0.8);
+color:var(--text-1);
 display:flex;
 align-items:center;
 justify-content:center;
-transition:background 0.15s ease;
+transition:background var(--dur-1) var(--ease);
 }
 
 .btm-add-btn,
@@ -190,7 +191,7 @@ padding:0;
 width:22px;
 height:22px;
 border-radius:50%;
-background:rgba(0,0,0,0.6);
+background:var(--bg-0);
 backdrop-filter:blur(4px);
 font-size:14px;
 }
@@ -200,7 +201,7 @@ padding:0;
 width:22px;
 height:22px;
 border-radius:50%;
-background:rgba(0,0,0,0.6);
+background:var(--bg-0);
 backdrop-filter:blur(4px);
 top:6px;
 right:6px;
@@ -228,11 +229,13 @@ right:6px;
 
 .btm-add-btn:hover,
 .btm-move-btn:hover {
-background:rgba(129,0,0,0.7);
+background:var(--accent-dim);
+color:var(--text-0);
 }
 
 .btm-delete-btn:hover {
-background:rgba(180,40,40,0.8);
+background:var(--btn-danger-hover-bg);
+color:var(--danger);
 }
 
 /* ===== Legacy ===== */
@@ -240,7 +243,7 @@ background:rgba(180,40,40,0.8);
 position:absolute;
 top:0.5vh;
 right:0.5vh;
-background-color:rgba(0, 0, 0, 0.7);
+background-color:rgba(10,8,6,.72);
 border:none;
 border-radius:50%;
 width:2em;
@@ -253,16 +256,15 @@ align-items:center;
 }
 
 .btm-drawer-content h2 {
-color:var(--color-hr);
-text-shadow:0 0 10px rgba(255, 149, 50, 0.7);
+color:var(--text-0);
 }
 
 .btm-drawer-content p {
-color:#e0e0e0;
+color:var(--text-1);
 }
 
 .neon-text {
-color:var(--color-hr);
+color:var(--text-1);
 }
 
 .btm-image.btm-placeholder {
@@ -277,7 +279,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,0.6);
+background:rgba(10,8,6,.62);
 backdrop-filter:blur(4px);
 display:flex;
 justify-content:center;
@@ -286,13 +288,13 @@ z-index:var(--z-modal);
 }
 
 .btm-dialog {
-background:var(--background-color-A);
+background:var(--bg-1);
 padding:24px;
-border-radius:var(--fjm-border-radius);
+border-radius:var(--radius-lg);
 min-width:300px;
-border:1px solid rgba(255,255,255,0.08);
-color:var(--color-text-primary);
-box-shadow:0 16px 48px rgba(0,0,0,0.5);
+border:1px solid var(--border-subtle);
+color:var(--text-0);
+box-shadow:var(--elev-3);
 }
 
 .btm-dialog h3 {
@@ -330,49 +332,25 @@ gap:8px;
 .btm-dialog-button {
 padding:8px 16px;
 border:none;
-border-radius:var(--fjm-button-border-radius);
+border-radius:var(--radius-sm);
 cursor:pointer;
-background:rgba(255,255,255,0.08);
-color:var(--color-text-secondary);
-transition:background 0.15s ease;
+background:var(--bg-2);
+color:var(--text-1);
+transition:background var(--dur-1) var(--ease);
 }
 
 .btm-dialog-button:hover {
-background:rgba(255,255,255,0.15);
+background:var(--hover-strong);
+color:var(--text-0);
 }
 
 .btm-dialog-submit {
-background:var(--color-accent);
-color:var(--color-text-primary);
+background:var(--accent);
+color:var(--accent-on);
 }
 
 .btm-dialog-submit:hover {
-background:var(--color-accent-hover);
+background:var(--accent-hover);
 }
 
-/* ===== Light mode ===== */
-.light-mode .btm-drawer {
-border-top:1px solid rgba(0,0,0,0.1);
-}
-
-.light-mode .btm-drawer-handle {
-background:rgba(0,0,0,0.07);
-box-shadow:0 2px 4px rgba(0,0,0,0.08);
-}
-
-.light-mode .btm-drawer-handle:hover {
-background:rgba(0,0,0,0.12);
-}
-
-.light-mode .btm-dialog {
-border-color:rgba(0,0,0,0.12);
-box-shadow:0 16px 48px rgba(0,0,0,0.2);
-}
-
-.light-mode .btm-dialog-button {
-background:rgba(0,0,0,0.06);
-}
-
-.light-mode .btm-dialog-button:hover {
-background:rgba(0,0,0,0.12);
-}
+/* Light-mode overrides are handled by tokens; nothing theme-specific remains. */

@@ -8,7 +8,7 @@ manga-editor-desu/
 │   ├── core/           基盤（logger, settings, auto-save, compression, font, util）
 │   ├── fabric/         fabric.js Canvas管理（fabric-management.js）
 │   ├── layer/          レイヤー管理（layer-management.js, blend, floating-window）
-│   ├── ui/             UI部品（toast, overlay, control, event-delegator, prompt-manager）
+│   ├── ui/             UI部品（toast, overlay, control, event-delegator, prompt-manager, gallery）
 │   ├── sidebar/        サイドバーツール
 │   │   ├── pen/        ブラシ（crayon, ink, marker, spray, drip, stroke）
 │   │   ├── text/       テキスト（vertical-text, custom effects 10種）
@@ -33,8 +33,41 @@ manga-editor-desu/
 │   └── ui/             機能別CSS
 ├── html/               HTMLテンプレート
 ├── llm_doc/            LLM向けドキュメント
-└── scripts/            ユーティリティスクリプト（format, translation check）
+├── scripts/            ユーティリティスクリプト（format, translation check）
+├── 99_server.py        開発サーバ（127.0.0.1:8000）。ギャラリー用APIをhosts
+├── gallery_fs_api.py   ギャラリー用ファイルシステムブリッジ（パス検証・走査・認可）
+└── 99_tests/           Pythonユニットテスト（test/は機能サンドボックスなので使わない）
 ```
+
+## ギャラリーAPI（99_server.py）
+ギャラリーがローカルディレクトリを購読するための読み取り専用エンドポイント。
+`File System Access API`が使えないブラウザ（Braveなど）向けの代替経路。
+
+- バインドは`127.0.0.1`のみ。`Access-Control-Allow-Origin`は付与しない
+- 起動時にランダムtokenをコンソールへ出力。API要求は`X-Gallery-Token`必須
+- `Host`ヘッダと`Sec-Fetch-Site`も検証（DNSリバインディング対策）
+
+| エンドポイント | 説明 |
+|---|---|
+| `GET /api/fs/session` | トークン発行。同オリジンのみ |
+| `GET /api/fs/list?path=` | ディレクトリ内のフォルダと画像を返す |
+| `GET /api/fs/image?path=&name=` | 画像1件のバイナリを返す |
+
+- 絶対パスのみ。`..`・NULLバイト・パス区切りを含む名前は拒否
+- 書き込み系エンドポイントは存在しない（読み取り専用）
+- 検証: `python -m unittest discover -s 99_tests -v`
+
+## ギャラリーのソースモード
+`js/ui/gallery.js`の`galleryState.sourceMode`で3形態を切り替える。
+
+| モード | 条件 | パス記憶 | Watch |
+|---|---|---|---|
+| `handle` | `showDirectoryPicker`あり（Chrome/Edge） | 可（IndexedDBにハンドル保存） | 可 |
+| `server` | API到達可（Brave + localhost） | 可（絶対パスを文字列保存） | 可 |
+| `input` | `file://`など | 不可（webkdirectoryは絶対パスを持たない） | 不可 |
+
+- `input`モードでは画面に低下モードの注意書きを表示する
+- `server`モードの保存キーは`path::<絶対パス>`。葉名が同じフォルダを区別するため
 
 ## 主要グローバル変数
 | 変数 | 説明 |
