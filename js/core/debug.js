@@ -428,6 +428,27 @@ console.warn('[Test Skip] gallery watch diff not loaded');
 return false;
 }
 
+// gallerySyncRoot removes every entry of a root that is absent from the list
+// it is handed. A watch update must therefore pass existing + new files, or
+// each poll would delete everything loaded by the previous one.
+function testGalleryWatchFileSet(){
+if(typeof galleryWatchFileSet!=='undefined'){
+TestRunner.reset();
+const existing=[{name:'a.png'},{name:'b.png'}];
+const added=[{name:'c.png'}];
+const merged=galleryWatchFileSet(existing,added);
+TestRunner.assertEquals(3,merged.length,'Existing files are retained alongside new ones');
+TestRunner.assertEquals('a.png',merged[0].name,'Existing files come first and are not dropped');
+TestRunner.assertEquals('c.png',merged[2].name,'New files are appended');
+TestRunner.assertEquals(2,galleryWatchFileSet(existing,[]).length,'No new files still yields the full set');
+TestRunner.assertEquals(1,galleryWatchFileSet([],added).length,'Empty baseline yields just the new files');
+TestRunner.assertEquals(0,galleryWatchFileSet(null,null).length,'Null inputs are tolerated');
+return TestRunner.printResults('Gallery Watch File Set');
+}
+console.warn('[Test Skip] gallery watch file set not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -447,6 +468,7 @@ results.galleryHandleStore=await testGalleryHandleStore();
 results.galleryServerPathKeys=testGalleryServerPathKeys();
 results.galleryPickerModel=testGalleryPickerModel();
 results.galleryWatchDiff=testGalleryWatchDiff();
+results.galleryWatchFileSet=testGalleryWatchFileSet();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

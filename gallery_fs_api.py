@@ -34,15 +34,14 @@ def may_serve_api(headers, presented_token, expected_token):
 
     All three checks are required: the host check defeats DNS rebinding, the
     fetch-site check stops another site reaching this origin at all, and the
-    token stops other local processes.
+    token stops other local processes. An unconfigured expected_token fails
+    closed - a server that never generated one must serve nothing.
     """
     if not check_host(headers):
         return False
     if not is_api_request(headers):
         return False
-    if expected_token is None:
-        return True
-    if not presented_token:
+    if not expected_token or not presented_token:
         return False
     return secrets.compare_digest(str(presented_token), str(expected_token))
 

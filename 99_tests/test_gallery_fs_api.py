@@ -126,6 +126,13 @@ class TestAuthGate(unittest.TestCase):
         same_origin = headers(host='localhost', fetch_site='same-origin')
         self.assertFalse(gallery_fs_api.may_serve_api(same_origin, None, 'right'))
 
+    def test_unconfigured_token_fails_closed(self):
+        # If no token was ever generated, the server must refuse rather than
+        # serve every caller that passes the host and fetch-site checks.
+        same_origin = headers(host='localhost', fetch_site='same-origin')
+        self.assertFalse(gallery_fs_api.may_serve_api(same_origin, 'anything', None))
+        self.assertFalse(gallery_fs_api.may_serve_api(same_origin, None, None))
+
     def test_foreign_host_never_served(self):
         self.assertFalse(gallery_fs_api.may_serve_api(
             headers(host='evil.com', fetch_site='same-origin'), 'right', 'right'))

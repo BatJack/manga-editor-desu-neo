@@ -365,11 +365,19 @@ function galleryServerWatchPoll() {
     });
 }
 
+// galleryLoadFolder -> gallerySyncRoot treats its argument as the COMPLETE set
+// for a root and removes anything absent from it. A watch tick must therefore
+// pass the already-loaded files together with the new ones, never the diff
+// alone - otherwise every poll deletes the previous poll's images.
+function galleryWatchFileSet(existingFiles, addedFiles) {
+    return (existingFiles || []).concat(addedFiles || []);
+}
+
 function galleryAppendServerImages(rootId, entry, images) {
-    return galleryServerFiles(entry.path, rootId, images).then(function (files) {
-        // Reuse the scoped refresh path so entry bookkeeping, counts and the
-        // info line all stay in one place.
-        galleryLoadFolder(rootId, files, document.getElementById('gallery-info'));
+    var section = galleryState.sections[gallerySectionId(rootId, '')];
+    var existing = section ? section.files.slice() : [];
+    return galleryServerFiles(entry.path, rootId, images).then(function (newFiles) {
+        galleryLoadFolder(rootId, galleryWatchFileSet(existing, newFiles), document.getElementById('gallery-info'));
     }).catch(function (err) {
         galleryLogger.warn('Failed to add watched images to ' + rootId + ': ' + err);
     });
@@ -377,6 +385,33 @@ function galleryAppendServerImages(rootId, entry, images) {
 // Shown only when the gallery fell back to the one-shot directory input.
 // Never hidden on an error path: a silent fallback is exactly what the
 // project's "no silent fallback" rule forbids.
+// A server path can only be forgotten if its stored record goes too: the path
+// bar removes the display name from savedPaths, but without this the entry in
+// galleryServerPaths survives and is restored on the next load - the folder the
+// user deleted would come back every time (Review Focus #5).
+function galleryForgetServerPath(rootId) {
+    var saved = galleryState.serverPaths || galleryServerSavedPaths();
+    var kept = {};
+    var removed = false;
+    for (var key in saved) {
+        if (saved[key] && saved[key].rootId === rootId) {
+            removed = true;
+            continue;
+        }
+        kept[key] = saved[key];
+    }
+    if (!removed) return false;
+    galleryState.serverPaths = kept;
+    try {
+        localStorage.setItem('galleryServerPaths', JSON.stringify(kept));
+    } catch (err) {
+        galleryLogger.warn('Failed to forget server path: ' + err);
+    }
+    if (galleryState.watchedRootId === rootId) galleryStopWatch();
+    galleryLogger.info('Gallery forgot server path for ' + rootId);
+    return true;
+}
+
 function galleryUpdateModeNotice() {
 var notice = document.getElementById('gallery-mode-notice');
 if (!notice) return;
@@ -504,6 +539,10 @@ function galleryRemoveRoot(rootId) {
             ? galleryState.rootOrder[galleryState.rootOrder.length - 1]
             : null;
     }
+
+    // Unloading a folder also forgets its stored path, so a folder removed by
+    // its section header does not reappear after the next reload.
+    galleryForgetServerPath(rootId);
 
     galleryLogger.info('Gallery: removed folder ' + rootId);
     galleryUpdateInfo();
@@ -721,6 +760,8 @@ function galleryRemoveSavedPath(path, e) {
     var paths = (galleryState.savedPaths || []).filter(function (p) { return p !== path; });
     gallerySetSavedPaths(paths);
     galleryRemoveDirHandle(path);
+    // Also drop the stored absolute path, or it would be restored on reload.
+    galleryForgetServerPath(path);
     try {
         localStorage.removeItem(GALLERY_LAST_PATH_KEY);
     } catch (err) {
@@ -737,7 +778,10 @@ function galleryClearSavedPath(e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    (galleryState.savedPaths || []).forEach(function (p) { galleryRemoveDirHandle(p); });
+    (galleryState.savedPaths || []).forEach(function (p) {
+        galleryRemoveDirHandle(p);
+        galleryForgetServerPath(p);
+    });
     gallerySetSavedPaths([]);
     try {
         localStorage.removeItem(GALLERY_LAST_PATH_KEY);
