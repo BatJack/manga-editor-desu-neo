@@ -3,15 +3,16 @@ from http.server import SimpleHTTPRequestHandler
 import socketserver
 import os
 import mimetypes
+import gallery_fs_api
 
 mimetypes.add_type('application/javascript', '.js')
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    
+
     def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET')
+        # No Access-Control-Allow-Origin: an endpoint that reads arbitrary
+        # paths must never be readable cross-origin by another site.
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
         self.send_header('Connection', 'keep-alive')
         self.send_header('Service-Worker-Allowed', '/')
@@ -35,12 +36,14 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 if __name__ == '__main__':
     PORT = 8000
-    ADDRESS = ""
+    ADDRESS = "127.0.0.1"
     socketserver.TCPServer.allow_reuse_address = True
-    
+    token = gallery_fs_api.new_token()
+
     with ThreadedTCPServer((ADDRESS, PORT), CORSRequestHandler) as httpd:
         with ThreadPoolExecutor(max_workers=500) as executor:
             print(f"Server running at http://localhost:{PORT}")
+            print(f"Gallery API token: {token}")
             try:
                 httpd.serve_forever()
             except KeyboardInterrupt:
