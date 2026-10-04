@@ -386,66 +386,97 @@ console.warn('[Test Skip] gallery handle store or IndexedDB not available');
 return false;
 }
 
-// Folder-name keys must stay distinct by FULL path, not leaf name:
-// D:\a\shots and D:\b\shots are different folders with the same leaf.
-function testGalleryServerPathKeys(){
-if(typeof galleryServerPathKey!=='undefined'){
+
+// Every identifier gallery.js calls must resolve. Removing the server-mode
+// bridge left three galleryForgetServerPath() call sites behind, and the
+// ReferenceError they raised broke removing a saved path, clearing them all,
+// and removing a folder. This walks the source and fails on any call to a
+// function that is neither defined in the file nor a known global.
+async function testGalleryNoUndefinedCalls(){
 TestRunner.reset();
-TestRunner.assertEquals('path::D:\\a\\shots',galleryServerPathKey('D:\\a\\shots'),'Key uses the full path');
-TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\b\\shots'),'Same leaf name, different parents stay distinct');
-TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\A\\SHOTS'),'Key comparison is case-sensitive');
-return TestRunner.printResults('Gallery Server Path Keys');
-}
-console.warn('[Test Skip] gallery server source not loaded');
+if(typeof gallerySourceText!=='undefined'){
+const source=await gallerySourceText();
+const KNOWN_GLOBALS=['showDirectoryPicker','fetch','setTimeout','clearTimeout','setInterval',
+'clearInterval','requestAnimationFrame','cancelAnimationFrame','queueMicrotask','structuredClone',
+'indexedDB','URL','Blob','File','FileReader','FormData','TextDecoder','TextEncoder','JSON','Math',
+'Object','Array','String','Number','Boolean','Date','Error','Promise','Map','Set','parseInt','parseFloat',
+'isNaN','isFinite','encodeURIComponent','decodeURIComponent','encodeURI','decodeURI','getText',
+'getTranslation','createToast','createToastError','loadGalleryImageToCanvas','fabric','canvas',
+'getCanvasGUID','updateLayerPanel','EventDelegator','galleryLogger','uiLogger','logger','warn',
+'info','error','debug','trace','console','getRandomNumber','ArrayBufferUtils','deepCopy','TaskQueue',
+'isPanel','if','for','while','switch','catch','return','typeof','function','new','await','of','in'];
+
+if(!source){
+console.warn('[Test Skip] gallery source text not available');
 return false;
 }
 
-function testGalleryPickerModel(){
-if(typeof galleryPickerShouldShowUp!=='undefined'){
-TestRunner.reset();
-TestRunner.assert(galleryPickerShouldShowUp('D:\\a\\b','D:\\a'),'Up is offered below the start directory');
-TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','D:\\a'),'Up is hidden at the start directory');
-TestRunner.assert(!galleryPickerShouldShowUp('D:\\a','C:\\other'),'Up is hidden when the parent is outside the start directory');
-return TestRunner.printResults('Gallery Picker Model');
-}
-console.warn('[Test Skip] gallery folder picker not loaded');
-return false;
+// Defined names: function declarations and top-level var/const/let bindings.
+const defined=new Set();
+const decl=/(?:^|\n)\s*(?:function\s+([A-Za-z_$][\w$]*)|(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=)/g;
+let m;
+while((m=decl.exec(source))!==null){defined.add(m[1]||m[2]);}
+
+// Call sites: name( not preceded by a dot and not a declaration.
+const stripped=source.replace(/\/\*[\s\S]*?\*\//g,' ').replace(/\/\/[^\n]*/g,' ')
+.replace(/'(?:\\.|[^'\\])*'/g,"''").replace(/"(?:\\.|[^"\\])*"/g,'""');
+const unknown={};
+const call=/(?:^|[^\w$.])([A-Za-z_$][\w$]*)\s*\(/g;
+while((m=call.exec(stripped))!==null){
+const name=m[1];
+if(defined.has(name)||KNOWN_GLOBALS.indexOf(name)!==-1)continue;
+unknown[name]=(unknown[name]||0)+1;
 }
 
-function testGalleryWatchDiff(){
-if(typeof galleryDiffImages!=='undefined'){
-TestRunner.reset();
-const before=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:1000,size:1}];
-const after=[{name:'a.png',mtime:1000,size:1},{name:'b.png',mtime:2000,size:9},{name:'c.png',mtime:3000,size:3}];
-const added=galleryDiffImages(before,after);
-TestRunner.assertEquals(1,added.filter(x=>x.name==='c.png').length,'New file detected');
-TestRunner.assertEquals(0,added.filter(x=>x.name==='a.png').length,'Unchanged file not re-added');
-TestRunner.assertEquals(1,added.filter(x=>x.name==='b.png').length,'Modified file treated as changed');
-TestRunner.assertEquals(3,galleryDiffImages([],after).length,'Empty baseline yields every image');
-return TestRunner.printResults('Gallery Watch Diff');
+const names=Object.keys(unknown).filter(function(n){return n!=='resolve'&&n!=='reject'&&n!=='onEntry'&&n!=='step';});
+TestRunner.assertEquals(0,names.length,
+'No call to an undefined function in gallery.js: '+(names.length?names.join(', '):'none'));
+return TestRunner.printResults('Gallery Undefined Calls');
 }
-console.warn('[Test Skip] gallery watch diff not loaded');
-return false;
 }
 
-// gallerySyncRoot removes every entry of a root that is absent from the list
-// it is handed. A watch update must therefore pass existing + new files, or
-// each poll would delete everything loaded by the previous one.
-function testGalleryWatchFileSet(){
-if(typeof galleryWatchFileSet!=='undefined'){
-TestRunner.reset();
-const existing=[{name:'a.png'},{name:'b.png'}];
-const added=[{name:'c.png'}];
-const merged=galleryWatchFileSet(existing,added);
-TestRunner.assertEquals(3,merged.length,'Existing files are retained alongside new ones');
-TestRunner.assertEquals('a.png',merged[0].name,'Existing files come first and are not dropped');
-TestRunner.assertEquals('c.png',merged[2].name,'New files are appended');
-TestRunner.assertEquals(2,galleryWatchFileSet(existing,[]).length,'No new files still yields the full set');
-TestRunner.assertEquals(1,galleryWatchFileSet([],added).length,'Empty baseline yields just the new files');
-TestRunner.assertEquals(0,galleryWatchFileSet(null,null).length,'Null inputs are tolerated');
-return TestRunner.printResults('Gallery Watch File Set');
+
+// Reads gallery.js as text so the undefined-call check can scan it. Fetching
+// the already-loaded script keeps this working on file:// too.
+function gallerySourceText(){
+if(typeof fetch!=='function')return '';
+return fetch('js/ui/gallery.js').then(function(r){return r.text();})
+.then(function(t){gallerySourceCache=t;return t;})
+.catch(function(){return gallerySourceCache||'';});
 }
-console.warn('[Test Skip] gallery watch file set not loaded');
+var gallerySourceCache='';
+
+// FileSystemDirectoryHandle.values() returns an AsyncIterableIterator, not a
+// Promise - it has no .then(). galleryWalkHandle already iterates it correctly;
+// this pins the shape that actually threw in galleryWatchPoll.
+async function testGalleryHandleIteration(){
+if(typeof galleryEachHandleEntry!=='undefined'){
+const entries=[
+{kind:'file',name:'a.png',getFile:function(){return Promise.resolve({name:'a.png'});}},
+{kind:'directory',name:'sub',getFile:function(){return Promise.resolve({});}}
+];
+let i=0;
+// Shaped like a real one: has next(), deliberately has no then().
+const handle={values:function(){
+return {
+next:function(){return Promise.resolve(i<entries.length?{done:false,value:entries[i++]}:{done:true});}
+};
+}};
+TestRunner.reset();
+const seen=[];
+try{
+await galleryEachHandleEntry(handle,function(entry){seen.push(entry.name);return Promise.resolve();});
+TestRunner.assert(true,'galleryEachHandleEntry resolves without throwing');
+}catch(err){
+TestRunner.assert(false,'galleryEachHandleEntry resolves without throwing',err.name+': '+err.message);
+}
+TestRunner.assertEquals(2,seen.length,'Every entry visited');
+TestRunner.assertEquals('a.png',seen[0],'First entry seen');
+TestRunner.assertEquals('sub',seen[1],'Iterator yields directories too; filtering is the caller-s job');
+TestRunner.assertThrows(function(){handle.values().then(function(){});},'A raw values() result really does lack .then() (the original bug)');
+return TestRunner.printResults('Gallery Handle Iteration');
+}
+console.warn('[Test Skip] gallery handle iteration not loaded');
 return false;
 }
 
@@ -464,11 +495,9 @@ colorConversion:testColorConversion()
 
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
+results.galleryNoUndefinedCalls=await testGalleryNoUndefinedCalls();
 results.galleryHandleStore=await testGalleryHandleStore();
-results.galleryServerPathKeys=testGalleryServerPathKeys();
-results.galleryPickerModel=testGalleryPickerModel();
-results.galleryWatchDiff=testGalleryWatchDiff();
-results.galleryWatchFileSet=testGalleryWatchFileSet();
+results.galleryHandleIteration=await testGalleryHandleIteration();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');

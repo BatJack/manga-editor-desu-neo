@@ -1,120 +1,39 @@
+"""Development server for Manga Editor Desu.
+
+Serves the app on loopback and opens it in a browser that can run the gallery
+properly. The gallery's path memory and watch mode need the File System Access
+API, which only Chromium browsers implement, so Chrome and Edge are preferred
+and the fallback is announced rather than silent.
+"""
 from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 import os
-import json
 import mimetypes
-import gallery_fs_api
+
+import browser_launcher
 
 mimetypes.add_type('application/javascript', '.js')
 
-API_PREFIX = '/api/fs/'
 
+class LocalOnlyRequestHandler(SimpleHTTPRequestHandler):
+    """Static file server bound to loopback, with no CORS header.
 
-class CORSRequestHandler(SimpleHTTPRequestHandler):
+    A browser-side endpoint that could read arbitrary paths once lived here.
+    It is gone; the gallery now uses the File System Access API directly, so
+    this handler only ever serves the project's own files.
+    """
+
     protocol_version = 'HTTP/1.1'
 
-    # Set from __main__ so the handler can compare presented tokens without
-    # importing server state into the pure gallery_fs_api module.
-    api_token = None
-
     def end_headers(self):
-        # No Access-Control-Allow-Origin: an endpoint that reads arbitrary
-        # paths must never be readable cross-origin by another site.
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
         self.send_header('Connection', 'keep-alive')
         self.send_header('Service-Worker-Allowed', '/')
-        return super(CORSRequestHandler, self).end_headers()
-
-    def _send_json(self, status, payload):
-        body = json.dumps(payload).encode('utf-8')
-        self.send_response(status)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def _send_error_json(self, status, reason):
-        self._send_json(status, {'error': reason})
-
-    def _presented_token(self):
-        return self.headers.get('X-Gallery-Token')
-
-    def _serve_session(self):
-        # Hands out the token, so it must never be reachable cross-origin.
-        if not gallery_fs_api.check_host(self.headers):
-            self._send_error_json(403, 'host not allowed')
-            return
-        if not gallery_fs_api.is_api_request(self.headers):
-            self._send_error_json(403, 'not a same-origin request')
-            return
-        self._send_json(200, {'token': self.api_token})
-
-    def _serve_list(self, query):
-        raw = query.get('path')
-        if not raw:
-            self._send_error_json(400, 'path is required')
-            return
-        try:
-            self._send_json(200, gallery_fs_api.scan_dir(raw))
-        except ValueError as err:
-            self._send_error_json(400, str(err))
-        except OSError as err:
-            self._send_error_json(404, str(err))
-
-    def _serve_image(self, query):
-        raw = query.get('path')
-        name = query.get('name')
-        if not raw or not name:
-            self._send_error_json(400, 'path and name are required')
-            return
-        try:
-            scanned = gallery_fs_api.scan_dir(raw)
-            entry = gallery_fs_api.find_image(scanned, name)
-        except KeyError:
-            self._send_error_json(404, 'image not found: %s' % name)
-            return
-        except ValueError as err:
-            self._send_error_json(400, str(err))
-            return
-
-        content_type = mimetypes.guess_type(entry['name'])[0] or 'application/octet-stream'
-        try:
-            with open(entry['path'], 'rb') as handle:
-                body = handle.read()
-        except OSError as err:
-            # Folder vanished or permissions changed between scan and read.
-            self._send_error_json(404, str(err))
-            return
-        self.send_response(200)
-        self.send_header('Content-Type', content_type)
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def _serve_api(self):
-        endpoint = self.path[len(API_PREFIX):].split('?', 1)[0]
-        if endpoint == 'session':
-            self._serve_session()
-            return
-        if not gallery_fs_api.may_serve_api(
-                self.headers, self._presented_token(), self.api_token):
-            self._send_error_json(403, 'forbidden')
-            return
-        query = gallery_fs_api.parse_query(self.path)
-        if endpoint == 'list':
-            self._serve_list(query)
-        elif endpoint == 'image':
-            self._serve_image(query)
-        else:
-            self._send_error_json(404, 'unknown endpoint: %s' % endpoint)
+        return super(LocalOnlyRequestHandler, self).end_headers()
 
     def do_GET(self):
         self.directory = os.getcwd()
-        if self.path.startswith(API_PREFIX):
-            # Never fall through to static file serving.
-            self._serve_api()
-            return
         return SimpleHTTPRequestHandler.do_GET(self)
 
     def handle_one_request(self):
@@ -131,19 +50,24 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     timeout = 60
 
 
-if __name__ == '__main__':
-    PORT = 8000
-    ADDRESS = "127.0.0.1"
-    socketserver.TCPServer.allow_reuse_address = True
-    token = gallery_fs_api.new_token()
-    CORSRequestHandler.api_token = token
+def main():
+    port = 8000
+    address = "127.0.0.1"
+    url = 'http://localhost:%d/index.html' % port
+    browser_launcher._make_console_utf8_safe()
 
-    with ThreadedTCPServer((ADDRESS, PORT), CORSRequestHandler) as httpd:
-        with ThreadPoolExecutor(max_workers=500) as executor:
-            print(f"Server running at http://localhost:{PORT}")
-            print(f"Gallery API token: {token}")
+    socketserver.TCPServer.allow_reuse_address = True
+    with ThreadedTCPServer((address, port), LocalOnlyRequestHandler) as httpd:
+        with ThreadPoolExecutor(max_workers=500):
+            print('Server running at http://localhost:%d' % port)
+            supported = browser_launcher.launch(url)
             try:
                 httpd.serve_forever()
             except KeyboardInterrupt:
-                print("\nShutting down server...")
+                print('\nShutting down server...')
                 httpd.shutdown()
+    return supported
+
+
+if __name__ == '__main__':
+    main()
