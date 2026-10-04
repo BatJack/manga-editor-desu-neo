@@ -17,8 +17,91 @@ var galleryState = {
     watchedRootId: null, // the single folder currently watched (null when off)
     dirHandle: null,     // FileSystemDirectoryHandle (watch mode)
     watchTimer: null,
-    watchActive: false
+    watchActive: false,
+    sourceMode: 'input',  // 'handle' | 'server' | 'input'
+    serverToken: null,     // token handed out by the local Python bridge
+    pickerPath: ''         // absolute path currently listed in the folder picker
 };
+
+// ── server bridge (local Python API) ─────────────────────────
+//
+// Brave disables the File System Access API entirely, so when no handle source
+// is available the gallery falls back to the loopback server in 99_server.py.
+// Server mode stores absolute paths as plain strings, which sidesteps the
+// handle-serialization problem that only applies to FileSystemHandle objects.
+
+var GALLERY_API_BASE = '/api/fs/';
+
+// Keys saved server paths by FULL path: two folders can share a leaf name
+// (D:\a\shots and D:\b\shots) and must not collapse into one entry.
+function galleryServerPathKey(absPath) {
+    return 'path::' + absPath;
+}
+
+function galleryServerApiUrl(apiPath, params) {
+    var url = GALLERY_API_BASE + apiPath;
+    if (!params) return url;
+    var parts = [];
+    for (var key in params) {
+        if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+        if (params[key] === undefined || params[key] === null) continue;
+        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+    }
+    return parts.length ? url + '?' + parts.join('&') : url;
+}
+
+// Rejects with the HTTP status attached so callers can tell 400 (bad path)
+// from 404 (folder gone) from 403 (token rejected) and never retry blindly.
+function galleryServerRequest(apiPath, params) {
+    var headers = {};
+    if (galleryState.serverToken) headers['X-Gallery-Token'] = galleryState.serverToken;
+    return fetch(galleryServerApiUrl(apiPath, params), { headers: headers, cache: 'no-store' })
+    .then(function (res) {
+        if (!res.ok) {
+            var err = new Error('gallery api ' + apiPath + ' failed: ' + res.status);
+            err.status = res.status;
+            throw err;
+        }
+        return res;
+    });
+}
+
+function galleryServerList(absPath) {
+    return galleryServerRequest('list', { path: absPath }).then(function (res) { return res.json(); });
+}
+
+function galleryServerReadImage(absPath, name) {
+    return galleryServerRequest('image', { path: absPath, name: name }).then(function (res) { return res.blob(); });
+}
+
+// Resolves true only when the bridge answered with a usable token.
+function galleryProbeServerBridge() {
+    return fetch(GALLERY_API_BASE + 'session', { cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('bridge session status ' + res.status);
+        return res.json();
+    }).then(function (data) {
+        if (!data || typeof data.token !== 'string' || !data.token) throw new Error('bridge returned no token');
+        galleryState.serverToken = data.token;
+        galleryLogger.info('Gallery bridge available, server mode enabled');
+        return true;
+    }).catch(function (err) {
+        galleryState.serverToken = null;
+        galleryLogger.warn('Gallery bridge unavailable: ' + err);
+        return false;
+    });
+}
+
+function gallerySelectSourceMode() {
+    if (typeof showDirectoryPicker === 'function') {
+        galleryState.sourceMode = 'handle';
+        return Promise.resolve('handle');
+    }
+    return galleryProbeServerBridge().then(function (ok) {
+        galleryState.sourceMode = ok ? 'server' : 'input';
+        galleryLogger.info('Gallery source mode: ' + galleryState.sourceMode);
+        return galleryState.sourceMode;
+    });
+}
 
 // Entry keys always contain "::", so they can never collide with Object.prototype
 // members. entryMap still uses a null prototype so for-in iteration is exact.
@@ -511,7 +594,9 @@ function galleryUpdateSectionCount(section) {
 function galleryUpdateWatchButton() {
     var watchBtn = document.getElementById('gallery-watch-btn');
     if (!watchBtn) return;
-    if (typeof showDirectoryPicker === 'undefined') {
+    // Watch needs a re-pollable source: a handle, or the loopback bridge.
+    // Plain input mode has neither.
+    if (galleryState.sourceMode === 'input') {
         watchBtn.style.display = 'none';
         return;
     }
@@ -1082,6 +1167,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (galleryState.savedPaths.length) galleryState.activePath = galleryState.savedPaths[0];
     galleryUpdatePathBar();
 
+    // Pick the source before anything reads a folder: handle mode in
+    // Chrome/Edge, server mode in Brave, input mode on file://.
+    gallerySelectSourceMode().then(function () {
+        galleryUpdateWatchButton();
+    });
+
     var pathToggle = document.getElementById('gallery-path-toggle');
     if (pathToggle) {
         pathToggle.addEventListener('keydown', function (e) {
@@ -1120,8 +1211,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Prefer the File System Access API: it hands back a persistable directory
 // handle, which is what lets a saved path reopen its own folder later without
-// the OS dialog falling back to the last-used location.
+// the OS dialog falling back to the last-used location. Brave has no such API,
+// so server mode uses the loopback bridge instead.
 function openGalleryFolder() {
+    if (galleryState.sourceMode === 'server') {
+        galleryOpenFolderPicker();
+        return;
+    }
     if (typeof showDirectoryPicker === 'function') {
         showDirectoryPicker({ mode: 'read' }).then(function (handle) {
             var rootId = handle.name || 'folder';

@@ -386,6 +386,20 @@ console.warn('[Test Skip] gallery handle store or IndexedDB not available');
 return false;
 }
 
+// Folder-name keys must stay distinct by FULL path, not leaf name:
+// D:\a\shots and D:\b\shots are different folders with the same leaf.
+function testGalleryServerPathKeys(){
+if(typeof galleryServerPathKey!=='undefined'){
+TestRunner.reset();
+TestRunner.assertEquals('path::D:\\a\\shots',galleryServerPathKey('D:\\a\\shots'),'Key uses the full path');
+TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\b\\shots'),'Same leaf name, different parents stay distinct');
+TestRunner.assert(galleryServerPathKey('D:\\a\\shots')!==galleryServerPathKey('D:\\A\\SHOTS'),'Key comparison is case-sensitive');
+return TestRunner.printResults('Gallery Server Path Keys');
+}
+console.warn('[Test Skip] gallery server source not loaded');
+return false;
+}
+
 async function runAllTests(){
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c       MANGA EDITOR TEST SUITE         ','color:blue;font-weight:bold');
@@ -402,6 +416,7 @@ colorConversion:testColorConversion()
 results.arrayBuffer=await testArrayBufferUtils();
 results.taskQueue=await testTaskQueue();
 results.galleryHandleStore=await testGalleryHandleStore();
+results.galleryServerPathKeys=testGalleryServerPathKeys();
 
 console.log('%c========================================','color:blue;font-weight:bold');
 console.log('%c           TEST SUMMARY                ','color:blue;font-weight:bold');
