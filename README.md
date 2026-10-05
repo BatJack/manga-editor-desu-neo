@@ -15,9 +15,10 @@
 
 
 如果您想在本地下载文件（运行速度更快），请使用：
+ComfyUI需添加 --enable-cors-header 启动参数
 git clone https://github.com/new-sankaku/manga-editor-desu.git
 cd manga-editor-desu
-start index.html
+double-click start.bat | python 99_server.py
 
 
 该应用程序支持各种功能，如图像拖放、文件选择导入、文本生成图像功能、图像生成图像功能等。
